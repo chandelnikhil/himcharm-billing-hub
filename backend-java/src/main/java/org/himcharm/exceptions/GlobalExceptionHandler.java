@@ -68,6 +68,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * A unique resource value, such as a store code, is already in use.
+     */
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse> handleDuplicateResource(
+            DuplicateResourceException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null, request);
+    }
+
+    /**
      * Authenticated but not authorized (e.g. {@code @PreAuthorize} denial).
      */
     @ExceptionHandler(AccessDeniedException.class)

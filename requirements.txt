@@ -1,0 +1,40 @@
+Requirement:
+
+We need an application where we will manage our all 5 stores bills, invoices & whats app campaigns like birthtday, anniversary, festivals.
+
+
+The idea is customer come to stores
+1. Initially we having all the store items added into system. So during the invoice generation suggestions will come
+ 
+Customers purchase the items, like clothes and all all have clotes and all. They come for invoice their we take the details what they have buy and all create a invoice and payment they did separately not from the application. and when when payment collected done. We automatically send the invoice to the customer on their whats app.
+
+Customer will go to their whats app. When they click see invoice details, In the window we show the invoice && a button for google review, when they click on that a pop comes 1-5 star rating if rating 4-5 redirecting them to google review page and otherwise we store the rating in our DB. no redirecting just for our case. also there are different tabs in this window, invoice history (showing all invoices) profile thats it.
+If user clicking profile we can take the data like name, birthday date, if married then anniversary date and spouse name too. So that this data will help us in campaigns.
+
+
+
+And also user can run the campaigns like birthtday, anniversaries, festivals and all all using whats app business only.
+
+Now coming to the application in the UI what we want to have...
+1. Dashboard Tab
+ Like sales, number of bills, revenue and graph based on the date-range, avg order-value
+ Feedback received from the whats app invoice. Avg Feedback rating and all,
+ Customers,  customer frequency, repeating or new in a graph form only
+
+2. Analytics
+ Stores summary, daily report, sales Transaction, Monthly trend sub-tabs
+ each tab having date-range and store name filter default all.
+
+
+3. Invoices
+  Old invoices and new invoices too. and here user will create invoice and all and after payment invoice send to the whats app
+
+4. Campaigns.
+All campaigns which i added in the top
+
+
+Backend : Java Spring boot,
+DB : MySQL
+frotnend react JS
+
+give the Backend flow how the apis will be enttiyes and all but backend and DB perspective
