@@ -24,7 +24,7 @@ public class UserRegisterDTO {
 
     @Email
     private String email;
-    
+
     @NotBlank
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Size(min = 8, max = 15)
