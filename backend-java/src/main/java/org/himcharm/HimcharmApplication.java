@@ -1,0 +1,13 @@
+package org.himcharm;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class HimcharmApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(HimcharmApplication.class, args);
+    }
+
+}
