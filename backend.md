@@ -268,50 +268,16 @@ Invoice should be separated into header and line items.
 | invoice_number | VARCHAR(80) UNIQUE |
 | store_id | BIGINT FK |
 | customer_id | BIGINT FK |
-| created_by | BIGINT FK users |
 | invoice_date | DATETIME |
 | subtotal | DECIMAL(12,2) |
 | discount_amount | DECIMAL(12,2) |
-| tax_amount | DECIMAL(12,2) |
 | total_amount | DECIMAL(12,2) |
-| payment_status | VARCHAR(30) |
-| payment_mode | VARCHAR(30) |
-| payment_reference | VARCHAR(150) |
-| invoice_status | VARCHAR(30) |
-| whatsapp_status | VARCHAR(30) |
-| public_token | VARCHAR(100) UNIQUE |
+| payment_mode | VARCHAR(30) | ==> CREDIT, DEBIT, UPI
+| whatsapp_status | VARCHAR(30) | => SENT, NOT_SENT, DELIVERED
 | paid_at | DATETIME |
 | created_at | DATETIME |
 | updated_at | DATETIME |
 
-### Recommended Payment Status
-
-```text
-PENDING
-PAID
-CANCELLED
-```
-
-### Invoice Status
-
-```text
-DRAFT
-CONFIRMED
-CANCELLED
-```
-
-### WhatsApp Status
-
-```text
-NOT_SENT
-QUEUED
-SENT
-DELIVERED
-READ
-FAILED
-```
-
----
 
 ## 6.2 Invoice Item
 
@@ -322,13 +288,10 @@ FAILED
 | id | BIGINT PK |
 | invoice_id | BIGINT FK |
 | product_id | BIGINT FK nullable |
-| sku | VARCHAR(100) |
 | item_name | VARCHAR(255) |
 | quantity | INT |
 | unit_price | DECIMAL(12,2) |
 | discount_amount | DECIMAL(12,2) |
-| tax_percentage | DECIMAL(5,2) |
-| tax_amount | DECIMAL(12,2) |
 | line_total | DECIMAL(12,2) |
 
 Important: copy product description and price into invoice item.

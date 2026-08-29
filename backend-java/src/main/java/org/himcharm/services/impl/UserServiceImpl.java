@@ -1,11 +1,8 @@
 package org.himcharm.services.impl;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.himcharm.dtos.UserRegisterDTO;
-import org.himcharm.dtos.UserResponseDTO;
 import org.himcharm.entities.User;
 import org.himcharm.exceptions.ResourceNotFoundException;
 import org.himcharm.repositories.UserRepo;
@@ -18,14 +15,10 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
-    private final ModelMapper modelMapper;
-
     @Override
     @Transactional
-    public UserRegisterDTO addUser(UserRegisterDTO registerDTO) {
-        User user = modelMapper.map(registerDTO, User.class);
-        User savedUser = this.userRepo.save(user);
-        return this.modelMapper.map(savedUser, UserRegisterDTO.class);
+    public User addUser(User user) {
+        return userRepo.save(user);
     }
 
     @Transactional
@@ -46,11 +39,10 @@ public class UserServiceImpl implements UserService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<UserResponseDTO> getAllUsers() {
+    public List<User> getAllUsers() {
         return userRepo.findAll()
                 .stream()
                 .filter(user -> !user.getEmail().equals("skillhub.cloud.dep@gmail.com"))
-                .map(user -> modelMapper.map(user, UserResponseDTO.class))
                 .toList();
     }
 }

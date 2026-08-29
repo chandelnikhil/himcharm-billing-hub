@@ -6,19 +6,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponseDTO {
+public class InvoiceItemResponseDTO {
 
     private Long id;
-    private String name;
-    private String brand;
-    private Double defaultPrice;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Long productId;
+    private String itemName;
+    private Integer quantity;
+    private Double unitPrice;
+    private Double discountPercentage;
+    private Double lineTotal;
 }

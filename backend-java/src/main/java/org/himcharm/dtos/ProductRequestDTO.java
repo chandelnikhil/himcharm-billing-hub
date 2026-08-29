@@ -8,8 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 public class ProductRequestDTO {
@@ -25,5 +23,5 @@ public class ProductRequestDTO {
     @NotNull(message = "Default price is required")
     @DecimalMin(value = "0.00", message = "Default price cannot be negative")
     @Digits(integer = 10, fraction = 2, message = "Default price must have at most 10 integer and 2 decimal digits")
-    private BigDecimal defaultPrice;
+    private Double defaultPrice;
 }

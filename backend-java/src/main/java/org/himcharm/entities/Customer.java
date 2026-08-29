@@ -2,6 +2,8 @@ package org.himcharm.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,7 +15,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.himcharm.enums.MaritalStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -22,21 +26,34 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "customers")
+public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", length = 150)
     private String name;
 
-    @Column(name = "brand", nullable = false, length = 150)
-    private String brand;
+    @Column(name = "phone", nullable = false, unique = true, length = 20)
+    private String phone;
 
-    @Column(name = "default_price", nullable = false, precision = 12, scale = 2)
-    private Double defaultPrice;
+    @Column(name = "email", length = 150)
+    private String email;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "marital_status", length = 30)
+    private MaritalStatus maritalStatus;
+
+    @Column(name = "spouse_name", length = 150)
+    private String spouseName;
+
+    @Column(name = "anniversary_date")
+    private LocalDate anniversaryDate;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

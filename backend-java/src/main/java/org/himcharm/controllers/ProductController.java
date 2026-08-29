@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.ApiResponse;
 import org.himcharm.dtos.ProductRequestDTO;
 import org.himcharm.dtos.ProductResponseDTO;
+import org.himcharm.entities.Product;
 import org.himcharm.services.ProductService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,18 +26,21 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ModelMapper modelMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse> addProduct(@Valid @RequestBody ProductRequestDTO request) {
-        ProductResponseDTO product = productService.addProduct(request);
+        Product product = productService.addProduct(modelMapper.map(request, Product.class));
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.success(HttpStatus.CREATED.value(), "Product added successfully", product)
+                ApiResponse.success(HttpStatus.CREATED.value(), "Product added successfully", toResponse(product))
         );
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllProducts() {
-        List<ProductResponseDTO> products = productService.getAllProducts();
+        List<ProductResponseDTO> products = productService.getAllProducts().stream()
+                .map(this::toResponse)
+                .toList();
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Products fetched successfully", products)
         );
@@ -43,7 +48,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getProduct(@PathVariable Long id) {
-        ProductResponseDTO product = productService.getProduct(id);
+        ProductResponseDTO product = toResponse(productService.getProduct(id));
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Product fetched successfully", product)
         );
@@ -54,9 +59,13 @@ public class ProductController {
             @PathVariable Long id,
             @Valid @RequestBody ProductRequestDTO request
     ) {
-        ProductResponseDTO product = productService.updateProduct(id, request);
+        Product product = productService.updateProduct(id, modelMapper.map(request, Product.class));
         return ResponseEntity.ok(
-                ApiResponse.success(HttpStatus.OK.value(), "Product updated successfully", product)
+                ApiResponse.success(HttpStatus.OK.value(), "Product updated successfully", toResponse(product))
         );
+    }
+
+    private ProductResponseDTO toResponse(Product product) {
+        return modelMapper.map(product, ProductResponseDTO.class);
     }
 }

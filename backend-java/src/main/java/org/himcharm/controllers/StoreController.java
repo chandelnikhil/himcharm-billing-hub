@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.ApiResponse;
 import org.himcharm.dtos.StoreRequestDTO;
 import org.himcharm.dtos.StoreResponseDTO;
+import org.himcharm.entities.Store;
 import org.himcharm.services.StoreService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,18 +27,21 @@ import java.util.List;
 public class StoreController {
 
     private final StoreService storeService;
+    private final ModelMapper modelMapper;
 
     @PostMapping
     public ResponseEntity<ApiResponse> createStore(@Valid @RequestBody StoreRequestDTO request) {
-        StoreResponseDTO store = storeService.createStore(request);
+        Store store = storeService.createStore(modelMapper.map(request, Store.class));
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.success(HttpStatus.CREATED.value(), "Store created successfully", store)
+                ApiResponse.success(HttpStatus.CREATED.value(), "Store created successfully", toResponse(store))
         );
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllStores() {
-        List<StoreResponseDTO> stores = storeService.getAllStores();
+        List<StoreResponseDTO> stores = storeService.getAllStores().stream()
+                .map(this::toResponse)
+                .toList();
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Stores fetched successfully", stores)
         );
@@ -44,7 +49,7 @@ public class StoreController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse> getStoreById(@PathVariable Long id) {
-        StoreResponseDTO store = storeService.getStoreById(id);
+        StoreResponseDTO store = toResponse(storeService.getStoreById(id));
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Store fetched successfully", store)
         );
@@ -55,9 +60,9 @@ public class StoreController {
             @PathVariable Long id,
             @Valid @RequestBody StoreRequestDTO request
     ) {
-        StoreResponseDTO store = storeService.updateStore(id, request);
+        Store store = storeService.updateStore(id, modelMapper.map(request, Store.class));
         return ResponseEntity.ok(
-                ApiResponse.success(HttpStatus.OK.value(), "Store updated successfully", store)
+                ApiResponse.success(HttpStatus.OK.value(), "Store updated successfully", toResponse(store))
         );
     }
 
@@ -72,5 +77,7 @@ public class StoreController {
 //        );
 //    }
 
-
+    private StoreResponseDTO toResponse(Store store) {
+        return modelMapper.map(store, StoreResponseDTO.class);
+    }
 }

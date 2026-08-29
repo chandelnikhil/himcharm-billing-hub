@@ -1,19 +1,18 @@
 package org.himcharm.services;
 
-import org.himcharm.dtos.StoreRequestDTO;
-import org.himcharm.dtos.StoreResponseDTO;
+import org.himcharm.entities.Store;
 
 import java.util.List;
 
 public interface StoreService {
 
-    StoreResponseDTO createStore(StoreRequestDTO request);
+    Store createStore(Store store);
 
-    List<StoreResponseDTO> getAllStores();
+    List<Store> getAllStores();
 
-    StoreResponseDTO getStoreById(Long id);
+    Store getStoreById(Long id);
 
-    StoreResponseDTO updateStore(Long id, StoreRequestDTO request);
+    Store updateStore(Long id, Store updatedStore);
 
     void deleteStore(Long id);
 }

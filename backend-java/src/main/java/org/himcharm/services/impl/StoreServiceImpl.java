@@ -1,14 +1,11 @@
 package org.himcharm.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.himcharm.dtos.StoreRequestDTO;
-import org.himcharm.dtos.StoreResponseDTO;
 import org.himcharm.entities.Store;
 import org.himcharm.exceptions.DuplicateResourceException;
 import org.himcharm.exceptions.ResourceNotFoundException;
 import org.himcharm.repositories.StoreRepository;
 import org.himcharm.services.StoreService;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,52 +16,45 @@ import java.util.List;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
-    private final ModelMapper modelMapper;
-
     @Override
     @Transactional
-    public StoreResponseDTO createStore(StoreRequestDTO request) {
-        if (storeRepository.existsByStoreCode(request.getStoreCode())) {
-            throw new DuplicateResourceException("Store code already exists: " + request.getStoreCode());
+    public Store createStore(Store store) {
+        if (storeRepository.existsByStoreCode(store.getStoreCode())) {
+            throw new DuplicateResourceException("Store code already exists: " + store.getStoreCode());
         }
-
-        Store store = modelMapper.map(request, Store.class);
-        return toResponse(storeRepository.save(store));
+        return storeRepository.save(store);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoreResponseDTO> getAllStores() {
-        return storeRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public List<Store> getAllStores() {
+        return storeRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public StoreResponseDTO getStoreById(Long id) {
-        return toResponse(findStore(id));
+    public Store getStoreById(Long id) {
+        return findStore(id);
     }
 
     @Override
     @Transactional
-    public StoreResponseDTO updateStore(Long id, StoreRequestDTO request) {
+    public Store updateStore(Long id, Store updatedStore) {
         Store store = findStore(id);
-        if (storeRepository.existsByStoreCodeAndIdNot(request.getStoreCode(), id)) {
-            throw new DuplicateResourceException("Store code already exists: " + request.getStoreCode());
+        if (storeRepository.existsByStoreCodeAndIdNot(updatedStore.getStoreCode(), id)) {
+            throw new DuplicateResourceException("Store code already exists: " + updatedStore.getStoreCode());
         }
 
-        store.setStoreCode(request.getStoreCode());
-        store.setName(request.getName());
-        store.setPhone(request.getPhone());
-        store.setAddress(request.getAddress());
-        store.setGoogleReviewUrl(request.getGoogleReviewUrl());
-        if (request.getActive() != null) {
-            store.setActive(request.getActive());
+        store.setStoreCode(updatedStore.getStoreCode());
+        store.setName(updatedStore.getName());
+        store.setPhone(updatedStore.getPhone());
+        store.setAddress(updatedStore.getAddress());
+        store.setGoogleReviewUrl(updatedStore.getGoogleReviewUrl());
+        if (updatedStore.getActive() != null) {
+            store.setActive(updatedStore.getActive());
         }
 
-        return toResponse(storeRepository.save(store));
+        return storeRepository.save(store);
     }
 
     @Override
@@ -78,7 +68,4 @@ public class StoreServiceImpl implements StoreService {
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found with id: " + id));
     }
 
-    private StoreResponseDTO toResponse(Store store) {
-        return modelMapper.map(store, StoreResponseDTO.class);
-    }
 }

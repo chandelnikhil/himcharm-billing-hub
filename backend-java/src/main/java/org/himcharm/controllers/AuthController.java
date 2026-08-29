@@ -17,6 +17,7 @@ import org.himcharm.dtos.UserRegisterDTO;
 import org.himcharm.entities.User;
 import org.himcharm.jwt.JwtService;
 import org.himcharm.services.UserService;
+import org.modelmapper.ModelMapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class AuthController {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/register")
     public ResponseEntity<UserRegisterDTO> registerUser(
@@ -37,7 +39,8 @@ public class AuthController {
     ) {
         String encodedPassword = passwordEncoder.encode(userRegisterDTO.getPassword());
         userRegisterDTO.setPassword(encodedPassword);
-        UserRegisterDTO savedUserDTO = userService.addUser(userRegisterDTO);
+        User savedUser = userService.addUser(modelMapper.map(userRegisterDTO, User.class));
+        UserRegisterDTO savedUserDTO = modelMapper.map(savedUser, UserRegisterDTO.class);
         return new ResponseEntity<>(savedUserDTO, HttpStatus.CREATED);
     }
 

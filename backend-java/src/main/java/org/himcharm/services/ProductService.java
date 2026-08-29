@@ -1,17 +1,16 @@
 package org.himcharm.services;
 
-import org.himcharm.dtos.ProductRequestDTO;
-import org.himcharm.dtos.ProductResponseDTO;
+import org.himcharm.entities.Product;
 
 import java.util.List;
 
 public interface ProductService {
 
-    ProductResponseDTO addProduct(ProductRequestDTO request);
+    Product addProduct(Product product);
 
-    List<ProductResponseDTO> getAllProducts();
+    List<Product> getAllProducts();
 
-    ProductResponseDTO getProduct(Long id);
+    Product getProduct(Long id);
 
-    ProductResponseDTO updateProduct(Long id, ProductRequestDTO request);
+    Product updateProduct(Long id, Product updatedProduct);
 }
