@@ -42,12 +42,12 @@ public class InvoiceItem {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "unit_price", nullable = false)
     private Double unitPrice;
 
-    @Column(name = "discount_percentage", nullable = false, precision = 5, scale = 2)
+    @Column(name = "discount_percentage", nullable = false)
     private Double discountPercentage;
 
-    @Column(name = "line_total", nullable = false, precision = 12, scale = 2)
+    @Column(name = "line_total", nullable = false)
     private Double lineTotal;
 }

@@ -61,9 +61,7 @@ public class InvoiceController {
         Invoice invoice = Invoice.builder()
                 .store(Store.builder().id(request.getStoreId()).build())
                 .customer(Customer.builder().phone(request.getCustomerPhoneNumber()).build())
-                .invoiceDate(request.getInvoiceDate())
                 .paymentMode(request.getPaymentMode())
-                .paidAt(request.getPaidAt())
                 .build();
 
         for (InvoiceItemRequestDTO itemRequest : request.getItems()) {
@@ -104,7 +102,6 @@ public class InvoiceController {
                 .totalAmount(invoice.getTotalAmount())
                 .paymentMode(invoice.getPaymentMode())
                 .whatsappStatus(invoice.getWhatsappStatus())
-                .paidAt(invoice.getPaidAt())
                 .items(items)
                 .createdAt(invoice.getCreatedAt())
                 .updatedAt(invoice.getUpdatedAt())

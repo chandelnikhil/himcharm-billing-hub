@@ -27,7 +27,6 @@ public class InvoiceResponseDTO {
     private Double totalAmount;
     private PaymentMode paymentMode;
     private WhatsAppStatus whatsappStatus;
-    private LocalDateTime paidAt;
     private List<InvoiceItemResponseDTO> items;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

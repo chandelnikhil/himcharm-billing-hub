@@ -35,7 +35,7 @@ public class Product {
     @Column(name = "brand", nullable = false, length = 150)
     private String brand;
 
-    @Column(name = "default_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "default_price", nullable = false)
     private Double defaultPrice;
 
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -55,10 +55,10 @@ public class Invoice {
     @Column(name = "invoice_date", nullable = false)
     private LocalDateTime invoiceDate;
 
-    @Column(name = "subtotal", nullable = false, precision = 12, scale = 2)
+    @Column(name = "subtotal", nullable = false)
     private Double subtotal;
 
-    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    @Column(name = "total_amount", nullable = false)
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
@@ -68,9 +68,6 @@ public class Invoice {
     @Enumerated(EnumType.STRING)
     @Column(name = "whatsapp_status", nullable = false, length = 30)
     private WhatsAppStatus whatsappStatus;
-
-    @Column(name = "paid_at")
-    private LocalDateTime paidAt;
 
     @Builder.Default
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
