@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * reaches the controller. (Excludes {@code /auth/register}, which is admin-only
      * and does need authentication.))
      */
-    private static final List<String> UNFILTERED_PATHS = List.of("/auth/");
+    private static final List<String> UNFILTERED_PATHS = List.of("/auth/", "/webhooks/whatsapp");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

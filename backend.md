@@ -221,7 +221,6 @@ Phone number should be the main customer identifier because WhatsApp messaging d
 | Column | Type | Notes |
 |---|---|---|
 | id | BIGINT PK | |
-| customer_code | VARCHAR(50) UNIQUE | Optional |
 | name | VARCHAR(150) | |
 | phone | VARCHAR(20) UNIQUE | Main identity |
 | email | VARCHAR(150) | Optional |
@@ -229,8 +228,6 @@ Phone number should be the main customer identifier because WhatsApp messaging d
 | marital_status | VARCHAR(30) | SINGLE / MARRIED / OTHER |
 | spouse_name | VARCHAR(150) | Nullable |
 | anniversary_date | DATE | Nullable |
-| whatsapp_opt_in | BOOLEAN | Important for campaigns |
-| active | BOOLEAN | |
 | created_at | DATETIME | |
 | updated_at | DATETIME | |
 

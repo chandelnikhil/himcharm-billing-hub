@@ -65,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Login endpoint is public — you can't have a token before you log in.
                         .requestMatchers("/auth/**").permitAll()
+                        // Meta must be able to verify and deliver WhatsApp webhooks without a JWT.
+                        .requestMatchers("/webhooks/whatsapp/**").permitAll()
                         // Health checks must be accessible without a JWT for uptime monitors.
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         // Everything else requires a valid JWT.
