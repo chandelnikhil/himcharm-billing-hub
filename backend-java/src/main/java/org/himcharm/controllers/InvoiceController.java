@@ -7,12 +7,15 @@ import org.himcharm.dtos.InvoiceItemRequestDTO;
 import org.himcharm.dtos.InvoiceItemResponseDTO;
 import org.himcharm.dtos.InvoiceRequestDTO;
 import org.himcharm.dtos.InvoiceResponseDTO;
+import org.himcharm.dtos.PageResponseDTO;
 import org.himcharm.entities.Customer;
 import org.himcharm.entities.Invoice;
 import org.himcharm.entities.InvoiceItem;
 import org.himcharm.entities.Product;
 import org.himcharm.entities.Store;
 import org.himcharm.services.InvoiceService;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,8 +23,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -40,10 +45,22 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getAllInvoices() {
-        List<InvoiceResponseDTO> invoices = invoiceService.getAllInvoices().stream()
-                .map(this::toResponse)
-                .toList();
+    public ResponseEntity<ApiResponse> getInvoices(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) Long storeId
+    ) {
+        Page<Invoice> invoicePage = invoiceService.getInvoices(page, fromDate, toDate, storeId);
+        PageResponseDTO<InvoiceResponseDTO> invoices = PageResponseDTO.<InvoiceResponseDTO>builder()
+                .content(invoicePage.getContent().stream().map(this::toResponse).toList())
+                .page(invoicePage.getNumber())
+                .size(invoicePage.getSize())
+                .totalElements(invoicePage.getTotalElements())
+                .totalPages(invoicePage.getTotalPages())
+                .build();
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Invoices fetched successfully", invoices)
         );

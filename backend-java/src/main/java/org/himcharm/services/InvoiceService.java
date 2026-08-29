@@ -1,14 +1,15 @@
 package org.himcharm.services;
 
 import org.himcharm.entities.Invoice;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
+import java.time.LocalDate;
 
 public interface InvoiceService {
 
     Invoice createInvoice(Invoice invoice);
 
-    List<Invoice> getAllInvoices();
+    Page<Invoice> getInvoices(int page, LocalDate fromDate, LocalDate toDate, Long storeId);
 
     Invoice getInvoiceById(Long id);
 }

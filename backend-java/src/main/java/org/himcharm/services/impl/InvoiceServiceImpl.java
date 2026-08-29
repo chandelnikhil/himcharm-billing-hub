@@ -13,18 +13,22 @@ import org.himcharm.services.CustomerService;
 import org.himcharm.services.InvoiceService;
 import org.himcharm.services.ProductService;
 import org.himcharm.services.StoreService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
     private static final double ZERO = 0.0;
+    private static final int PAGE_SIZE = 30;
     private static final DateTimeFormatter INVOICE_DATE_FORMAT = DateTimeFormatter.ofPattern("ddMMyy");
 
     private final InvoiceRepository invoiceRepository;
@@ -78,8 +82,22 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Invoice> getAllInvoices() {
-        return invoiceRepository.findAll();
+    public Page<Invoice> getInvoices(int page, LocalDate fromDate, LocalDate toDate, Long storeId) {
+        if (page < 0) {
+            throw new IllegalStateException("Page number cannot be negative");
+        }
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new IllegalStateException("From date cannot be after to date");
+        }
+
+        LocalDateTime fromDateTime = fromDate == null ? null : fromDate.atStartOfDay();
+        LocalDateTime toDateExclusive = toDate == null ? null : toDate.plusDays(1).atStartOfDay();
+        PageRequest pageable = PageRequest.of(
+                page,
+                PAGE_SIZE,
+                Sort.by(Sort.Direction.DESC, "invoiceDate")
+        );
+        return invoiceRepository.findAllByInvoiceDateRange(fromDateTime, toDateExclusive, storeId, pageable);
     }
 
     @Override
