@@ -30,6 +30,7 @@ import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneR
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded'
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded'
 import ShoppingBagRoundedIcon from '@mui/icons-material/ShoppingBagRounded'
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded'
 import { useAuth } from '../../auth/AuthContext'
 
 const drawerWidth = 252
@@ -38,6 +39,7 @@ const navigation = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },
   { label: 'Analytics', path: '/analytics', icon: AnalyticsRoundedIcon, soon: true },
   { label: 'Invoices', path: '/invoices', icon: ReceiptLongRoundedIcon },
+  { label: 'Customers', path: '/customers', icon: PeopleAltRoundedIcon },
   { label: 'Campaigns', path: '/campaigns', icon: CampaignRoundedIcon, soon: true },
   { label: 'Users', path: '/users', icon: GroupsRoundedIcon },
   { label: 'Stores', path: '/stores', icon: StorefrontRoundedIcon },

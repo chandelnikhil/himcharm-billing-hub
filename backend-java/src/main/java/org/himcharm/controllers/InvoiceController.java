@@ -7,6 +7,7 @@ import org.himcharm.dtos.InvoiceItemRequestDTO;
 import org.himcharm.dtos.InvoiceItemResponseDTO;
 import org.himcharm.dtos.InvoiceRequestDTO;
 import org.himcharm.dtos.InvoiceResponseDTO;
+import org.himcharm.dtos.InvoiceSummaryResponseDTO;
 import org.himcharm.dtos.PageResponseDTO;
 import org.himcharm.entities.Customer;
 import org.himcharm.entities.Invoice;
@@ -54,8 +55,8 @@ public class InvoiceController {
             @RequestParam(required = false) Long storeId
     ) {
         Page<Invoice> invoicePage = invoiceService.getInvoices(page, fromDate, toDate, storeId);
-        PageResponseDTO<InvoiceResponseDTO> invoices = PageResponseDTO.<InvoiceResponseDTO>builder()
-                .content(invoicePage.getContent().stream().map(this::toResponse).toList())
+        PageResponseDTO<InvoiceSummaryResponseDTO> invoices = PageResponseDTO.<InvoiceSummaryResponseDTO>builder()
+                .content(invoicePage.getContent().stream().map(this::toSummaryResponse).toList())
                 .page(invoicePage.getNumber())
                 .size(invoicePage.getSize())
                 .totalElements(invoicePage.getTotalElements())
@@ -77,7 +78,10 @@ public class InvoiceController {
     private Invoice toEntity(InvoiceRequestDTO request) {
         Invoice invoice = Invoice.builder()
                 .store(Store.builder().id(request.getStoreId()).build())
-                .customer(Customer.builder().phone(request.getCustomerPhoneNumber()).build())
+                .customer(Customer.builder()
+                        .phone(request.getCustomerPhoneNumber())
+                        .name(request.getCustomerName())
+                        .build())
                 .paymentMode(request.getPaymentMode())
                 .build();
 
@@ -120,6 +124,22 @@ public class InvoiceController {
                 .paymentMode(invoice.getPaymentMode())
                 .whatsappStatus(invoice.getWhatsappStatus())
                 .items(items)
+                .createdAt(invoice.getCreatedAt())
+                .updatedAt(invoice.getUpdatedAt())
+                .build();
+    }
+
+    private InvoiceSummaryResponseDTO toSummaryResponse(Invoice invoice) {
+        return InvoiceSummaryResponseDTO.builder()
+                .id(invoice.getId())
+                .invoiceNumber(invoice.getInvoiceNumber())
+                .storeId(invoice.getStore().getId())
+                .customerId(invoice.getCustomer().getId())
+                .invoiceDate(invoice.getInvoiceDate())
+                .subtotal(invoice.getSubtotal())
+                .totalAmount(invoice.getTotalAmount())
+                .paymentMode(invoice.getPaymentMode())
+                .whatsappStatus(invoice.getWhatsappStatus())
                 .createdAt(invoice.getCreatedAt())
                 .updatedAt(invoice.getUpdatedAt())
                 .build();

@@ -22,6 +22,9 @@ public class InvoiceRequestDTO {
     @Size(max = 20, message = "Customer phone number must not exceed 20 characters")
     private String customerPhoneNumber;
 
+    @Size(max = 150, message = "Customer name must not exceed 150 characters")
+    private String customerName;
+
     private PaymentMode paymentMode;
 
     @Valid

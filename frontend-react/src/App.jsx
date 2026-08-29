@@ -9,6 +9,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const UsersPage = lazy(() => import('./pages/UsersPage'))
 const StoresPage = lazy(() => import('./pages/StoresPage'))
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage'))
+const CustomersPage = lazy(() => import('./pages/CustomersPage'))
 const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'))
 
 function AppLoader() {
@@ -35,6 +36,7 @@ function App() {
           <Route path="/users" element={<UsersPage />} />
           <Route path="/stores" element={<StoresPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/customers" element={<CustomersPage />} />
           <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
           <Route path="/campaigns" element={<ComingSoonPage title="Campaigns" />} />
         </Route>

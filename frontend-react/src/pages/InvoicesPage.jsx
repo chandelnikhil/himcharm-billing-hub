@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -36,7 +37,7 @@ import { invoicesApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
 const blankItem = () => ({ itemName: '', quantity: 1, unitPrice: '', discountPercentage: 0 })
-const initialForm = () => ({ storeId: '', customerPhoneNumber: '', paymentMode: 'UPI', items: [blankItem()] })
+const initialForm = () => ({ storeId: '', customerPhoneNumber: '', customerName: '', paymentMode: 'UPI', items: [blankItem()] })
 const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 })
 const formatDate = (value) => value ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '—'
 
@@ -48,6 +49,7 @@ export default function InvoicesPage() {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [detail, setDetail] = useState(null)
+  const [detailLoadingId, setDetailLoadingId] = useState(null)
   const [form, setForm] = useState(initialForm)
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
@@ -102,6 +104,17 @@ export default function InvoicesPage() {
     setAppliedFilters(emptyFilters)
   }
 
+  const openInvoiceDetail = async (invoiceId) => {
+    setDetailLoadingId(invoiceId)
+    try {
+      setDetail(await invoicesApi.get(invoiceId))
+    } catch (requestError) {
+      setNotice(getApiError(requestError, 'Unable to load invoice details'))
+    } finally {
+      setDetailLoadingId(null)
+    }
+  }
+
   const submit = async (event) => {
     event.preventDefault(); setSaving(true); setFormError('')
     const invalidItem = form.items.some((item) => !item.itemName.trim() || Number(item.quantity) < 1 || Number(item.unitPrice) < 0 || Number(item.discountPercentage) < 0 || Number(item.discountPercentage) > 100)
@@ -129,9 +142,9 @@ export default function InvoicesPage() {
           <Button color="inherit" onClick={clearFilters} disabled={!filters.fromDate && !filters.toDate && !filters.storeId && !appliedFilters.fromDate && !appliedFilters.toDate && !appliedFilters.storeId} sx={{ height: 40 }}>Clear</Button>
           <Typography color="text.secondary" sx={{ ml: { sm: 'auto' }, fontSize: 13 }}>{totalInvoices} invoice{totalInvoices === 1 ? '' : 's'}</Typography>
         </Box>
-        <TableContainer><Table sx={{ minWidth: 900 }}><TableHead><TableRow><TableCell>Invoice number</TableCell><TableCell>Store</TableCell><TableCell>Date</TableCell><TableCell>Payment</TableCell><TableCell>WhatsApp</TableCell><TableCell align="right">Items</TableCell><TableCell align="right">Amount</TableCell><TableCell align="right">Action</TableCell></TableRow></TableHead><TableBody>
-          {(loading || error || !filteredInvoices.length) ? <TableState columns={8} loading={loading} error={error} emptyMessage={query ? 'No invoices match your search.' : 'Create your first invoice to begin tracking sales.'} onRetry={() => loadData()} /> : filteredInvoices.map((invoice) => (
-            <TableRow key={invoice.id} hover><TableCell><Typography sx={{ color: 'primary.main', fontSize: 13.5, fontWeight: 750 }}>{invoice.invoiceNumber || `#${invoice.id}`}</Typography></TableCell><TableCell>{storeMap.get(String(invoice.storeId))?.name || `Store #${invoice.storeId}`}</TableCell><TableCell>{formatDate(invoice.invoiceDate)}</TableCell><TableCell><StatusChip active="SUCCESS" label={invoice.paymentMode || 'Not set'} /></TableCell><TableCell><StatusChip active={invoice.whatsappStatus} label={invoice.whatsappStatus || 'NOT SENT'} /></TableCell><TableCell align="right">{invoice.items?.length || 0}</TableCell><TableCell align="right" sx={{ fontWeight: 750 }}>{money.format(invoice.totalAmount || 0)}</TableCell><TableCell align="right"><Tooltip title="View invoice"><IconButton size="small" onClick={() => setDetail(invoice)}><VisibilityOutlinedIcon fontSize="small" /></IconButton></Tooltip></TableCell></TableRow>
+        <TableContainer><Table sx={{ minWidth: 900 }}><TableHead><TableRow><TableCell>Invoice number</TableCell><TableCell>Store</TableCell><TableCell>Date</TableCell><TableCell>Payment</TableCell><TableCell>WhatsApp</TableCell><TableCell align="right">Amount</TableCell><TableCell align="right">Action</TableCell></TableRow></TableHead><TableBody>
+          {(loading || error || !filteredInvoices.length) ? <TableState columns={7} loading={loading} error={error} emptyMessage={query ? 'No invoices match your search.' : 'Create your first invoice to begin tracking sales.'} onRetry={() => loadData()} /> : filteredInvoices.map((invoice) => (
+            <TableRow key={invoice.id} hover><TableCell><Typography sx={{ color: 'primary.main', fontSize: 13.5, fontWeight: 750 }}>{invoice.invoiceNumber || `#${invoice.id}`}</Typography></TableCell><TableCell>{storeMap.get(String(invoice.storeId))?.name || `Store #${invoice.storeId}`}</TableCell><TableCell>{formatDate(invoice.invoiceDate)}</TableCell><TableCell><StatusChip active="SUCCESS" label={invoice.paymentMode || 'Not set'} /></TableCell><TableCell><StatusChip active={invoice.whatsappStatus} label={invoice.whatsappStatus || 'NOT SENT'} /></TableCell><TableCell align="right" sx={{ fontWeight: 750 }}>{money.format(invoice.totalAmount || 0)}</TableCell><TableCell align="right"><Tooltip title="View invoice"><span><IconButton size="small" disabled={detailLoadingId !== null} onClick={() => openInvoiceDetail(invoice.id)}>{detailLoadingId === invoice.id ? <CircularProgress size={18} /> : <VisibilityOutlinedIcon fontSize="small" />}</IconButton></span></Tooltip></TableCell></TableRow>
           ))}
         </TableBody></Table></TableContainer>
         <TablePagination component="div" count={totalInvoices} page={page} onPageChange={(_, nextPage) => setPage(nextPage)} rowsPerPage={30} rowsPerPageOptions={[30]} labelRowsPerPage="Rows per page" />
@@ -143,9 +156,10 @@ export default function InvoicesPage() {
         <DialogContent dividers sx={{ pt: 2.5 }}>
           {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
           {!stores.length && !loading && <Alert severity="info" sx={{ mb: 2 }}>Create an active store before creating an invoice.</Alert>}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.2fr 1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1.1fr 1fr 1fr 1fr' }, gap: 2 }}>
             <TextField select required label="Store" value={form.storeId} onChange={(event) => setForm((current) => ({ ...current, storeId: event.target.value }))}>{stores.filter((store) => store.active).map((store) => <MenuItem key={store.id} value={store.id}>{store.name} ({store.storeCode})</MenuItem>)}</TextField>
             <TextField required label="Customer phone" value={form.customerPhoneNumber} onChange={(event) => setForm((current) => ({ ...current, customerPhoneNumber: event.target.value }))} inputProps={{ maxLength: 20 }} />
+            <TextField label="Customer name" value={form.customerName} onChange={(event) => setForm((current) => ({ ...current, customerName: event.target.value }))} inputProps={{ maxLength: 150 }} />
             <TextField select label="Payment mode" value={form.paymentMode} onChange={(event) => setForm((current) => ({ ...current, paymentMode: event.target.value }))}>{['UPI', 'CREDIT', 'DEBIT'].map((mode) => <MenuItem key={mode} value={mode}>{mode}</MenuItem>)}</TextField>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3.5, mb: 1.5 }}><Typography variant="h6">Invoice items</Typography><Button type="button" size="small" startIcon={<AddRoundedIcon />} onClick={() => setForm((current) => ({ ...current, items: [...current.items, blankItem()] }))}>Add item</Button></Box>

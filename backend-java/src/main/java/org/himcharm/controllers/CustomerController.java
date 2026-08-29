@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.ApiResponse;
 import org.himcharm.dtos.CustomerRequestDTO;
 import org.himcharm.dtos.CustomerResponseDTO;
+import org.himcharm.dtos.PageResponseDTO;
 import org.himcharm.entities.Customer;
 import org.himcharm.services.CustomerService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +19,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/customers")
@@ -37,10 +41,22 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getAllCustomers() {
-        List<CustomerResponseDTO> customers = customerService.getAllCustomers().stream()
-                .map(this::toResponse)
-                .toList();
+    public ResponseEntity<ApiResponse> getCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
+            @RequestParam(required = false) String phone
+    ) {
+        Page<Customer> customerPage = customerService.getCustomers(page, fromDate, toDate, phone);
+        PageResponseDTO<CustomerResponseDTO> customers = PageResponseDTO.<CustomerResponseDTO>builder()
+                .content(customerPage.getContent().stream().map(this::toResponse).toList())
+                .page(customerPage.getNumber())
+                .size(customerPage.getSize())
+                .totalElements(customerPage.getTotalElements())
+                .totalPages(customerPage.getTotalPages())
+                .build();
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Customers fetched successfully", customers)
         );

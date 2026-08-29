@@ -18,6 +18,13 @@ export const storesApi = {
   update: (id, store) => apiClient.put(`/stores/${id}`, store).then(unwrap),
 }
 
+export const customersApi = {
+  list: (params = {}) => apiClient.get('/customers', { params }).then(unwrap),
+  get: (id) => apiClient.get(`/customers/${id}`).then(unwrap),
+  create: (customer) => apiClient.post('/customers', customer).then(unwrap),
+  update: (id, customer) => apiClient.put(`/customers/${id}`, customer).then(unwrap),
+}
+
 export const invoicesApi = {
   list: (params = {}) => apiClient.get('/invoices', { params }).then(unwrap),
   get: (id) => apiClient.get(`/invoices/${id}`).then(unwrap),

@@ -40,7 +40,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional
     public Invoice createInvoice(Invoice invoice) {
         Store store = storeService.getStoreById(invoice.getStore().getId());
-        Customer customer = customerService.getOrCreateCustomerByPhone(invoice.getCustomer().getPhone());
+        Customer customer = customerService.getOrCreateCustomerByPhone(
+                invoice.getCustomer().getPhone(),
+                invoice.getCustomer().getName()
+        );
         invoice.setStore(store);
         invoice.setCustomer(customer);
         invoice.setInvoiceDate(invoice.getInvoiceDate() == null ? LocalDateTime.now() : invoice.getInvoiceDate());
