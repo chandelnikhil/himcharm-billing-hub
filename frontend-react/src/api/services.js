@@ -30,3 +30,7 @@ export const invoicesApi = {
   get: (id) => apiClient.get(`/invoices/${id}`).then(unwrap),
   create: (invoice) => apiClient.post('/invoices', invoice).then(unwrap),
 }
+
+export const dashboardApi = {
+  get: (params = {}) => apiClient.get('/dashboard', { params }).then(unwrap),
+}

@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
@@ -26,4 +28,27 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             @Param("storeId") Long storeId,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT invoice
+            FROM Invoice invoice
+            JOIN FETCH invoice.customer customer
+            WHERE invoice.invoiceDate >= :fromDate
+              AND invoice.invoiceDate < :toDateExclusive
+              AND (:storeId IS NULL OR invoice.store.id = :storeId)
+            ORDER BY invoice.invoiceDate ASC
+            """)
+    List<Invoice> findAllForDashboard(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDateExclusive") LocalDateTime toDateExclusive,
+            @Param("storeId") Long storeId
+    );
+
+    @Query("""
+            SELECT MIN(invoice.id)
+            FROM Invoice invoice
+            WHERE invoice.customer.id IN :customerIds
+            GROUP BY invoice.customer.id
+            """)
+    List<Long> findFirstInvoiceIdsByCustomerIds(@Param("customerIds") Collection<Long> customerIds);
 }

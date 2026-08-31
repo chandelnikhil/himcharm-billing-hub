@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-The frontend uses `http://localhost:8080` by default. Override it when needed:
+The frontend uses `http://localhost:9090/himcharm` by default. Override it when needed:
 
 ```bash
 VITE_API_BASE_URL=https://api.example.com npm run dev
