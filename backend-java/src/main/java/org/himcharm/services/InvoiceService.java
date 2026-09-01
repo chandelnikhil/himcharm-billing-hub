@@ -12,4 +12,6 @@ public interface InvoiceService {
     Page<Invoice> getInvoices(int page, LocalDate fromDate, LocalDate toDate, Long storeId);
 
     Invoice getInvoiceById(Long id);
+
+    Invoice getInvoiceByInvoiceNumber(String invoiceNumber);
 }

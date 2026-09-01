@@ -110,6 +110,15 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Invoice getInvoiceByInvoiceNumber(String invoiceNumber) {
+        return invoiceRepository.findByInvoiceNumber(invoiceNumber)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Invoice not found with number: " + invoiceNumber
+                ));
+    }
+
     private Product findProduct(Product product) {
         if (product == null || product.getId() == null) {
             return null;

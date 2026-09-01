@@ -67,6 +67,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         // Meta must be able to verify and deliver WhatsApp webhooks without a JWT.
                         .requestMatchers("/webhooks/whatsapp/**").permitAll()
+                        // Customers open this endpoint from a WhatsApp invoice link without logging in.
+                        .requestMatchers("/whatsapp/invoice/**").permitAll()
                         // Health checks must be accessible without a JWT for uptime monitors.
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         // Everything else requires a valid JWT.
