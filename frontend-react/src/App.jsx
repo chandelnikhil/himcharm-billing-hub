@@ -11,6 +11,7 @@ const StoresPage = lazy(() => import('./pages/StoresPage'))
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage'))
 const CustomersPage = lazy(() => import('./pages/CustomersPage'))
 const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'))
+const PublicInvoicePage = lazy(() => import('./pages/PublicInvoicePage'))
 
 function AppLoader() {
   return <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', bgcolor: 'background.default' }}><CircularProgress size={32} /></Box>
@@ -27,6 +28,8 @@ function App() {
   return (
     <Suspense fallback={<AppLoader />}>
       <Routes>
+        <Route path="/whatsapp/invoice" element={<PublicInvoicePage />} />
+        <Route path="/public/invoice" element={<PublicInvoicePage />} />
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}

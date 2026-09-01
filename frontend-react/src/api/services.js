@@ -34,3 +34,12 @@ export const invoicesApi = {
 export const dashboardApi = {
   get: (params = {}) => apiClient.get('/dashboard', { params }).then(unwrap),
 }
+
+export const publicInvoiceApi = {
+  getReviewDetails: (invoiceNumber, signal) => apiClient
+    .get('/whatsapp/invoice', { params: { invoiceNumber }, signal })
+    .then(unwrap),
+  updateProfile: (invoiceNumber, profile) => apiClient
+    .put('/whatsapp/invoice/profile', profile, { params: { invoiceNumber } })
+    .then(unwrap),
+}

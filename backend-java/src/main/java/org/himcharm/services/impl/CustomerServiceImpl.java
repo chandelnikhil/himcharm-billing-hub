@@ -29,9 +29,11 @@ public class CustomerServiceImpl implements CustomerService {
         savedCustomer.setName(customer.getName());
         savedCustomer.setEmail(customer.getEmail());
         savedCustomer.setDateOfBirth(customer.getDateOfBirth());
+        savedCustomer.setGender(customer.getGender());
         savedCustomer.setMaritalStatus(customer.getMaritalStatus());
         savedCustomer.setSpouseName(customer.getSpouseName());
         savedCustomer.setAnniversaryDate(customer.getAnniversaryDate());
+        savedCustomer.setSpouseDateOfBirth(customer.getSpouseDateOfBirth());
         return customerRepository.save(savedCustomer);
     }
 
@@ -76,9 +78,11 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setName(updatedCustomer.getName());
         customer.setEmail(updatedCustomer.getEmail());
         customer.setDateOfBirth(updatedCustomer.getDateOfBirth());
+        customer.setGender(updatedCustomer.getGender());
         customer.setMaritalStatus(updatedCustomer.getMaritalStatus());
         customer.setSpouseName(updatedCustomer.getSpouseName());
         customer.setAnniversaryDate(updatedCustomer.getAnniversaryDate());
+        customer.setSpouseDateOfBirth(updatedCustomer.getSpouseDateOfBirth());
         return customerRepository.save(customer);
     }
 

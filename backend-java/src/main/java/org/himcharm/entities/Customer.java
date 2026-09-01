@@ -16,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.himcharm.enums.MaritalStatus;
+import org.himcharm.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +47,10 @@ public class Customer {
     private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "gender", length = 20)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "marital_status", length = 30)
     private MaritalStatus maritalStatus;
 
@@ -54,6 +59,9 @@ public class Customer {
 
     @Column(name = "anniversary_date")
     private LocalDate anniversaryDate;
+
+    @Column(name = "spouse_date_of_birth")
+    private LocalDate spouseDateOfBirth;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

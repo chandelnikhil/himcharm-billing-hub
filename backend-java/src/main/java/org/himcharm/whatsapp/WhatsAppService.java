@@ -53,7 +53,7 @@ public class WhatsAppService {
         List<String> bodyParameters = List.of(
                 request.customerName().trim(),
                 request.billNumber().trim(),
-                invoiceDate
+                "10000"
         );
 
         return whatsAppClient.sendTemplateMessage(

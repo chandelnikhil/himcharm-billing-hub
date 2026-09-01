@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.himcharm.enums.MaritalStatus;
+import org.himcharm.enums.Gender;
 
 import java.time.LocalDate;
 
@@ -22,9 +23,13 @@ public class CustomerRequestDTO {
 
     private LocalDate dateOfBirth;
 
+    private Gender gender;
+
     private MaritalStatus maritalStatus;
 
     private String spouseName;
 
     private LocalDate anniversaryDate;
+
+    private LocalDate spouseDateOfBirth;
 }
