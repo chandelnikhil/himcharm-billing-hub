@@ -1,5 +1,6 @@
 package org.himcharm.whatsapp;
 
+import org.himcharm.utilies.Constants;
 import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -7,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -18,14 +21,17 @@ public class WhatsAppClient {
 
     private final RestClient restClient;
     private final String senderPhoneNumberId;
+    private final ObjectMapper objectMapper;
 
     public WhatsAppClient(
             RestClient.Builder restClientBuilder,
+            ObjectMapper objectMapper,
             @Value("${whatsapp.api-base-url:https://graph.facebook.com/v23.0}") String apiBaseUrl,
             @Value("${whatsapp.phone-number-id}") String senderPhoneNumberId,
             @Value("${whatsapp.access-token}") String accessToken
     ) {
         this.senderPhoneNumberId = senderPhoneNumberId;
+        this.objectMapper = objectMapper;
         this.restClient = restClientBuilder
                 .baseUrl(apiBaseUrl)
                 .defaultHeaders(headers -> headers.setBearerAuth(accessToken))
@@ -50,16 +56,21 @@ public class WhatsAppClient {
                     .body(WhatsAppMessageResponse.class);
 
             if (response == null) {
-                throw new WhatsAppClientException("WhatsApp returned an empty response");
+                throw new WhatsAppClientException(
+                        "EMPTY_RESPONSE",
+                        "WhatsApp returned an empty response",
+                        null
+                );
             }
             return response;
         } catch (RestClientResponseException exception) {
+            throw toWhatsAppClientException(exception, "WhatsApp rejected the message");
+        } catch (ResourceAccessException exception) {
             throw new WhatsAppClientException(
-                    "WhatsApp rejected the message with HTTP status " + exception.getStatusCode().value(),
+                    "NETWORK_ERROR",
+                    "Unable to reach the WhatsApp API",
                     exception
             );
-        } catch (ResourceAccessException exception) {
-            throw new WhatsAppClientException("Unable to reach the WhatsApp API", exception);
         }
     }
 
@@ -71,7 +82,7 @@ public class WhatsAppClient {
     ) {
         Map<String, Object> request = Map.of(
                 "messaging_product", "whatsapp",
-                "to", recipientPhoneNumber,
+                "to", Constants.COUNTRY_CODE + recipientPhoneNumber,
                 "type", "template",
                 "template", Map.of(
                         "name", templateName,
@@ -96,16 +107,41 @@ public class WhatsAppClient {
                     .body(WhatsAppMessageResponse.class);
 
             if (response == null) {
-                throw new WhatsAppClientException("WhatsApp returned an empty response");
+                throw new WhatsAppClientException(
+                        "EMPTY_RESPONSE",
+                        "WhatsApp returned an empty response",
+                        null
+                );
             }
             return response;
         } catch (RestClientResponseException exception) {
+            throw toWhatsAppClientException(exception, "WhatsApp rejected the template message");
+        } catch (ResourceAccessException exception) {
             throw new WhatsAppClientException(
-                    "WhatsApp rejected the template message with HTTP status " + exception.getStatusCode().value(),
+                    "NETWORK_ERROR",
+                    "Unable to reach the WhatsApp API",
                     exception
             );
-        } catch (ResourceAccessException exception) {
-            throw new WhatsAppClientException("Unable to reach the WhatsApp API", exception);
         }
+    }
+
+    private WhatsAppClientException toWhatsAppClientException(
+            RestClientResponseException exception,
+            String fallbackMessage
+    ) {
+        String errorCode = "HTTP_" + exception.getStatusCode().value();
+        String errorMessage = fallbackMessage + " with HTTP status " + exception.getStatusCode().value();
+
+        try {
+            JsonNode error = objectMapper.readTree(exception.getResponseBodyAsString()).path("error");
+            if (!error.isMissingNode()) {
+                errorCode = error.path("code").asText(errorCode);
+                errorMessage = error.path("message").asText(errorMessage);
+            }
+        } catch (Exception ignored) {
+            // Keep the HTTP status fallback when Meta does not return valid JSON.
+        }
+
+        return new WhatsAppClientException(errorCode, errorMessage, exception);
     }
 }

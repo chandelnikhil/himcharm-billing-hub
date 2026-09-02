@@ -1,8 +1,8 @@
 package org.himcharm.enums;
 
-public enum WhatsAppStatus {
+public enum WhatsAppMessageStatus {
     SENT,
-    NOT_SENT,
     DELIVERED,
+    READ,
     FAILED
 }

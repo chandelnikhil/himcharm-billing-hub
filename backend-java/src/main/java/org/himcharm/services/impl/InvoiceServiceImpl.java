@@ -1,18 +1,28 @@
 package org.himcharm.services.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.himcharm.entities.Customer;
 import org.himcharm.entities.Invoice;
 import org.himcharm.entities.InvoiceItem;
 import org.himcharm.entities.Product;
 import org.himcharm.entities.Store;
+import org.himcharm.entities.WhatsAppMessage;
+import org.himcharm.enums.WhatsAppMessageStatus;
+import org.himcharm.enums.WhatsAppMessageType;
+import org.himcharm.enums.WhatsAppTemplateCategory;
 import org.himcharm.enums.WhatsAppStatus;
 import org.himcharm.exceptions.ResourceNotFoundException;
 import org.himcharm.repositories.InvoiceRepository;
+import org.himcharm.repositories.WhatsAppMessageRepository;
 import org.himcharm.services.CustomerService;
 import org.himcharm.services.InvoiceService;
 import org.himcharm.services.ProductService;
 import org.himcharm.services.StoreService;
+import org.himcharm.whatsapp.WhatsAppClientException;
+import org.himcharm.whatsapp.WhatsAppService;
+import org.himcharm.whatsapp.dto.InvoiceMessageRequest;
+import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -25,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InvoiceServiceImpl implements InvoiceService {
 
     private static final double ZERO = 0.0;
@@ -35,6 +46,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final StoreService storeService;
     private final CustomerService customerService;
     private final ProductService productService;
+    private final WhatsAppService whatsAppService;
+    private final WhatsAppMessageRepository whatsAppMessageRepository;
 
     @Override
     @Transactional
@@ -80,6 +93,46 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         Invoice savedInvoice = invoiceRepository.save(invoice);
         savedInvoice.setInvoiceNumber(buildInvoiceNumber(savedInvoice));
+        savedInvoice = invoiceRepository.save(savedInvoice);
+
+        WhatsAppMessage message = WhatsAppMessage.builder()
+                .customer(savedInvoice.getCustomer())
+                .invoice(savedInvoice)
+                .messageType(WhatsAppMessageType.INVOICE)
+                .phoneNumber(savedInvoice.getCustomer().getPhone())
+                .templateName(whatsAppService.getInvoiceTemplateName())
+                .templateCategory(WhatsAppTemplateCategory.UTILITY)
+                .templateLanguage(whatsAppService.getInvoiceTemplateLanguage())
+                .build();
+
+        try {
+            String normalizedPhoneNumber = whatsAppService.normalizePhoneNumber(
+                    savedInvoice.getCustomer().getPhone()
+            );
+            message.setPhoneNumber(normalizedPhoneNumber);
+
+            WhatsAppMessageResponse response = whatsAppService.sendInvoiceMessage(new InvoiceMessageRequest(
+                    savedInvoice.getCustomer().getName(),
+                    savedInvoice.getInvoiceNumber(),
+                    normalizedPhoneNumber
+            ));
+
+            message.setWhatsAppMessageId(firstMessageId(response));
+            message.setStatus(WhatsAppMessageStatus.SENT);
+            message.setSentAt(LocalDateTime.now());
+            savedInvoice.setWhatsappStatus(WhatsAppStatus.SENT);
+        } catch (WhatsAppClientException exception) {
+            markMessageFailed(message, exception.getErrorCode(), exception.getMessage());
+            savedInvoice.setWhatsappStatus(WhatsAppStatus.FAILED);
+            log.warn("WhatsApp failed for invoice {}: {}", savedInvoice.getInvoiceNumber(), exception.getMessage());
+        } catch (RuntimeException exception) {
+            markMessageFailed(message, exception.getClass().getSimpleName(), exception.getMessage());
+            savedInvoice.setWhatsappStatus(WhatsAppStatus.FAILED);
+            log.warn("Unable to send WhatsApp message for invoice {}: {}",
+                    savedInvoice.getInvoiceNumber(), exception.getMessage());
+        }
+
+        whatsAppMessageRepository.save(message);
         return invoiceRepository.save(savedInvoice);
     }
 
@@ -144,6 +197,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         return "INV-" + invoice.getStore().getStoreCode()
                 + "-" + invoice.getInvoiceDate().format(INVOICE_DATE_FORMAT)
                 + "-" + invoice.getId();
+    }
+
+    private String firstMessageId(WhatsAppMessageResponse response) {
+        if (response.messages() == null || response.messages().isEmpty()) {
+            return null;
+        }
+        return response.messages().getFirst().id();
+    }
+
+    private void markMessageFailed(WhatsAppMessage message, String errorCode, String errorMessage) {
+        message.setStatus(WhatsAppMessageStatus.FAILED);
+        message.setErrorCode(errorCode == null ? "UNKNOWN" : errorCode);
+        message.setErrorMessage(errorMessage == null ? "Unknown WhatsApp error" : errorMessage);
+        message.setFailedAt(LocalDateTime.now());
     }
 
 }

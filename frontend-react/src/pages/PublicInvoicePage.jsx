@@ -284,10 +284,6 @@ export default function PublicInvoicePage() {
 
   return (
     <div className="public-invoice-page">
-      <header className="public-header">
-        <img src="/HimCharm.png" alt="Himcharm" className="public-logo" />
-      </header>
-
       <main className="public-content">
         {loading ? (
           <div className="public-loading"><CircularProgress color="success" /><Typography>Opening your invoice…</Typography></div>

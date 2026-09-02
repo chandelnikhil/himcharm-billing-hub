@@ -1,5 +1,6 @@
 package org.himcharm.whatsapp;
 
+import lombok.Getter;
 import org.himcharm.whatsapp.dto.InvoiceMessageRequest;
 import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Getter
 @Service
 public class WhatsAppService {
 
@@ -22,7 +24,7 @@ public class WhatsAppService {
     public WhatsAppService(
             WhatsAppClient whatsAppClient,
             @Value("${whatsapp.template.invoice.name}") String invoiceTemplateName,
-            @Value("${whatsapp.template.invoice.language:en_US}") String invoiceTemplateLanguage
+            @Value("${whatsapp.template.language:en_US}") String invoiceTemplateLanguage
     ) {
         this.whatsAppClient = whatsAppClient;
         this.invoiceTemplateName = invoiceTemplateName;
@@ -48,8 +50,6 @@ public class WhatsAppService {
             throw new IllegalArgumentException("Bill number must not be blank");
         }
 
-        String invoiceDate = LocalDate.now().format(DATE_FORMATTER);
-
         List<String> bodyParameters = List.of(
                 request.customerName().trim(),
                 request.billNumber().trim(),
@@ -64,7 +64,7 @@ public class WhatsAppService {
         );
     }
 
-    private String normalizePhoneNumber(String phoneNumber) {
+    public String normalizePhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isBlank()) {
             throw new IllegalArgumentException("Client phone number must not be blank");
         }
