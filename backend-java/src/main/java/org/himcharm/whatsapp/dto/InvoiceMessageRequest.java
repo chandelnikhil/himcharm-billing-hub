@@ -10,6 +10,9 @@ public record InvoiceMessageRequest(
         String billNumber,
 
         @NotBlank(message = "Phone number is required")
-        String phoneNumber
+        String phoneNumber,
+
+        @NotBlank(message = "Invoice Amount")
+        Double amount
 ) {
 }

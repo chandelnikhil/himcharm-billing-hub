@@ -114,7 +114,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             WhatsAppMessageResponse response = whatsAppService.sendInvoiceMessage(new InvoiceMessageRequest(
                     savedInvoice.getCustomer().getName(),
                     savedInvoice.getInvoiceNumber(),
-                    normalizedPhoneNumber
+                    normalizedPhoneNumber,
+                    savedInvoice.getTotalAmount()
             ));
 
             message.setWhatsAppMessageId(firstMessageId(response));

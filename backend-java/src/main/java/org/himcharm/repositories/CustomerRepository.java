@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,6 +18,30 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByPhone(String phone);
 
     boolean existsByPhoneAndIdNot(String phone, Long id);
+
+    @Query("""
+            SELECT customer
+            FROM Customer customer
+            WHERE customer.dateOfBirth IS NOT NULL
+              AND MONTH(customer.dateOfBirth) = :month
+              AND DAY(customer.dateOfBirth) = :day
+            """)
+    List<Customer> findCustomersByBirthday(
+            @Param("month") int month,
+            @Param("day") int day
+    );
+
+    @Query("""
+            SELECT customer
+            FROM Customer customer
+            WHERE customer.anniversaryDate IS NOT NULL
+              AND MONTH(customer.anniversaryDate) = :month
+              AND DAY(customer.anniversaryDate) = :day
+            """)
+    List<Customer> findCustomersByAnniversary(
+            @Param("month") int month,
+            @Param("day") int day
+    );
 
     @Query("""
             SELECT customer

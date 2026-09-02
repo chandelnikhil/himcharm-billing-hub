@@ -80,6 +80,45 @@ public class WhatsAppClient {
             String languageCode,
             List<String> bodyParameters
     ) {
+        return executeTemplateMessage(
+                recipientPhoneNumber,
+                templateName,
+                languageCode,
+                List.of(bodyComponent(bodyParameters))
+        );
+    }
+
+    public WhatsAppMessageResponse sendImageHeaderTemplateMessage(
+            String recipientPhoneNumber,
+            String templateName,
+            String languageCode,
+            String imageUrl,
+            List<String> bodyParameters
+    ) {
+        Map<String, Object> headerComponent = Map.of(
+                "type", "header",
+                "parameters", List.of(
+                        Map.of(
+                                "type", "image",
+                                "image", Map.of("link", imageUrl)
+                        )
+                )
+        );
+
+        return executeTemplateMessage(
+                recipientPhoneNumber,
+                templateName,
+                languageCode,
+                List.of(headerComponent, bodyComponent(bodyParameters))
+        );
+    }
+
+    private WhatsAppMessageResponse executeTemplateMessage(
+            String recipientPhoneNumber,
+            String templateName,
+            String languageCode,
+            List<Map<String, Object>> components
+    ) {
         Map<String, Object> request = Map.of(
                 "messaging_product", "whatsapp",
                 "to", Constants.COUNTRY_CODE + recipientPhoneNumber,
@@ -87,14 +126,7 @@ public class WhatsAppClient {
                 "template", Map.of(
                         "name", templateName,
                         "language", Map.of("code", languageCode),
-                        "components", List.of(
-                                Map.of(
-                                        "type", "body",
-                                        "parameters", bodyParameters.stream()
-                                                .map(text -> Map.of("type", "text", "text", text))
-                                                .toList()
-                                )
-                        )
+                        "components", components
                 )
         );
 
@@ -123,6 +155,15 @@ public class WhatsAppClient {
                     exception
             );
         }
+    }
+
+    private Map<String, Object> bodyComponent(List<String> bodyParameters) {
+        return Map.of(
+                "type", "body",
+                "parameters", bodyParameters.stream()
+                        .map(text -> Map.of("type", "text", "text", text))
+                        .toList()
+        );
     }
 
     private WhatsAppClientException toWhatsAppClientException(
