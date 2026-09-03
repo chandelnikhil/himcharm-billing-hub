@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Avatar, Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { BarElement, CategoryScale, Chart as ChartJS, Legend, LineElement, LinearScale, PointElement, Tooltip } from 'chart.js'
+import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Tooltip } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
 import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded'
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded'
@@ -13,7 +13,7 @@ import ModuleCard from '../components/common/ModuleCard'
 import { dashboardApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend)
+ChartJS.register(BarController, LineController, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend)
 
 const toIsoDate = (date) => {
   const year = date.getFullYear()
