@@ -1,0 +1,22 @@
+Build the campaign module. Right now we are having Automated campaign birthday and anniversary
+and manual campaign only for festivals.
+
+Automated campaign Banner (Shpwing birthday & anniversary)
+Automated campaign will got run automatically and and under the automated campaign User should able to see the Whats App messages 
+having filters backend filters date range, campaign type : birthday and anniversary
+
+Fields to Include 
+Customer Name, Customer Phone Number, Customer birth date, customer anniversary date messages type like birthday, anniversary, message status, failure reason, failed at, sent it.
+
+Page Size = 30, default 
+
+and create banner for Manual campaign also
+but nothing below it for now
+For the above automated campaign below is the table i shown you...
+
+
+
+This for the UI (above one) Make the UI feel professional and responsive for all screen sizes
+
+For the backend create the method in the WhatsAppMessageController 
+one separate DTO for accepting the request param and separate response DTO having all needed details like the column mentioned above. No extra code nothign extra resue the code if possible

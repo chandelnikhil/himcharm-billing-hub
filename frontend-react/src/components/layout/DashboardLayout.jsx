@@ -40,7 +40,7 @@ const navigation = [
   { label: 'Analytics', path: '/analytics', icon: AnalyticsRoundedIcon, soon: true },
   { label: 'Invoices', path: '/invoices', icon: ReceiptLongRoundedIcon },
   { label: 'Customers', path: '/customers', icon: PeopleAltRoundedIcon },
-  { label: 'Campaigns', path: '/campaigns', icon: CampaignRoundedIcon, soon: true },
+  { label: 'Campaigns', path: '/campaigns', icon: CampaignRoundedIcon },
   { label: 'Users', path: '/users', icon: GroupsRoundedIcon },
   { label: 'Stores', path: '/stores', icon: StorefrontRoundedIcon },
 ]

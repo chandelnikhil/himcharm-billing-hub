@@ -35,6 +35,12 @@ export const dashboardApi = {
   get: (params = {}) => apiClient.get('/dashboard', { params }).then(unwrap),
 }
 
+export const campaignsApi = {
+  listAutomatedMessages: (params = {}) => apiClient
+    .get('/whatsapp/messages/automated-campaigns', { params })
+    .then(unwrap),
+}
+
 export const publicInvoiceApi = {
   getReviewDetails: (invoiceNumber, signal) => apiClient
     .get('/whatsapp/invoice', { params: { invoiceNumber }, signal })

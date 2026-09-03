@@ -10,6 +10,7 @@ const UsersPage = lazy(() => import('./pages/UsersPage'))
 const StoresPage = lazy(() => import('./pages/StoresPage'))
 const InvoicesPage = lazy(() => import('./pages/InvoicesPage'))
 const CustomersPage = lazy(() => import('./pages/CustomersPage'))
+const CampaignsPage = lazy(() => import('./pages/CampaignsPage'))
 const ComingSoonPage = lazy(() => import('./pages/ComingSoonPage'))
 const PublicInvoicePage = lazy(() => import('./pages/PublicInvoicePage'))
 
@@ -41,7 +42,7 @@ function App() {
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/analytics" element={<ComingSoonPage title="Analytics" />} />
-          <Route path="/campaigns" element={<ComingSoonPage title="Campaigns" />} />
+          <Route path="/campaigns" element={<CampaignsPage />} />
         </Route>
         <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
       </Routes>
