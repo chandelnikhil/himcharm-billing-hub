@@ -9,6 +9,7 @@ import org.himcharm.dtos.CustomerDashboardResponseDTO;
 import org.himcharm.dtos.CustomerFrequencyResponseDTO;
 import org.himcharm.entities.Invoice;
 import org.himcharm.repositories.CustomerRepository;
+import org.himcharm.repositories.FeedbackRepository;
 import org.himcharm.repositories.InvoiceRepository;
 import org.himcharm.repositories.projections.CustomerActivityProjection;
 import org.himcharm.repositories.projections.CustomerFrequencyProjection;
@@ -39,6 +40,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final InvoiceRepository invoiceRepository;
     private final CustomerRepository customerRepository;
+    private final FeedbackRepository feedbackRepository;
     private final StoreService storeService;
     private final Clock applicationClock;
 
@@ -172,6 +174,7 @@ public class DashboardServiceImpl implements DashboardService {
                 customerRepository.countCompletedProfiles(),
                 upcomingBirthdays,
                 upcomingAnniversaries,
+                oneDecimal(feedbackRepository.getAverageRating()),
                 LocalDateTime.now(applicationClock)
         );
     }
@@ -222,6 +225,10 @@ public class DashboardServiceImpl implements DashboardService {
 
     private double money(double amount) {
         return Math.round(amount * 100.0) / 100.0;
+    }
+
+    private double oneDecimal(double value) {
+        return Math.round(value * 10.0) / 10.0;
     }
 
     private static class DailyTotals {

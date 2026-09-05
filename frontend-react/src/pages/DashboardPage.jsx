@@ -11,6 +11,7 @@ import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
 import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded'
+import StarRoundedIcon from '@mui/icons-material/StarRounded'
 import PageHeader from '../components/common/PageHeader'
 import ModuleCard from '../components/common/ModuleCard'
 import { dashboardApi, storesApi } from '../api/services'
@@ -61,6 +62,7 @@ const emptyCustomerDashboard = {
   completedProfiles: 0,
   upcomingBirthdays: 0,
   upcomingAnniversaries: 0,
+  averageFeedbackRating: 0,
 }
 
 const activitySegments = [
@@ -128,13 +130,15 @@ function FrequencyRow({ label, value, maximum, color }) {
   )
 }
 
-function CustomerSummaryCard({ title, subtitle, value, icon: Icon, color, background }) {
+function CustomerSummaryCard({ title, subtitle, value, icon: Icon, color, background, decimal = false }) {
   return (
     <ModuleCard sx={{ minHeight: 175, p: 2.5, boxShadow: 'none', display: 'flex', justifyContent: 'space-between', overflow: 'hidden' }}>
       <Box>
         <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{title}</Typography>
         {subtitle && <Typography color="text.secondary" sx={{ mt: .2, fontSize: 12, fontStyle: 'italic' }}>{subtitle}</Typography>}
-        <Typography sx={{ mt: 2.2, fontSize: 30, fontWeight: 800 }}>{formatPrecise(value)}</Typography>
+        <Typography sx={{ mt: 2.2, fontSize: 30, fontWeight: 800 }}>
+          {decimal ? Number(value || 0).toFixed(1) : formatPrecise(value)}
+        </Typography>
       </Box>
       <Avatar sx={{ alignSelf: 'flex-end', width: 72, height: 72, color, bgcolor: background }}><Icon sx={{ fontSize: 42 }} /></Avatar>
     </ModuleCard>
@@ -189,10 +193,11 @@ function CustomerDashboardSection({ dashboard, loading, error, onRetry }) {
           </Box>
         </ModuleCard>
       </Box>
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mt: 2 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', xl: 'repeat(4, 1fr)' }, gap: 2, mt: 2 }}>
         <CustomerSummaryCard title="Total Profiles Completed" subtitle="Overall" value={dashboard.completedProfiles} icon={AccountCircleRoundedIcon} color="#16a364" background="#e4f8ef" />
         <CustomerSummaryCard title="Upcoming Birthdays" subtitle="within next 30 days" value={dashboard.upcomingBirthdays} icon={CakeRoundedIcon} color="#6955e7" background="#efedff" />
         <CustomerSummaryCard title="Upcoming Anniversaries" subtitle="within next 30 days" value={dashboard.upcomingAnniversaries} icon={FavoriteRoundedIcon} color="#ec4f78" background="#ffedf2" />
+        <CustomerSummaryCard title="Average Feedback Rating" subtitle="Overall · out of 5" value={dashboard.averageFeedbackRating} icon={StarRoundedIcon} color="#dc9200" background="#fff4d8" decimal />
       </Box>
       {loading && <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', bgcolor: alpha('#fff', .72), zIndex: 2, borderRadius: 3 }}><CircularProgress size={34} /></Box>}
     </Box>

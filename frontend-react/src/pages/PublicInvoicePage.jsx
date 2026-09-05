@@ -67,9 +67,8 @@ const formatPaymentMode = (value) => value
 function SocialLinks() {
   return (
     <div className="public-socials" aria-label="Himcharm social media">
-      <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook /></a>
-      <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram /></a>
-      <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" aria-label="LinkedIn"><LinkedIn /></a>
+      <a href="https://www.facebook.com/himcharm" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook /></a>
+      <a href="https://www.instagram.com/himcharm_apparels?igsh=MTd3c2RtdXB1Ym9qcA%3D%3D" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram /></a>
     </div>
   )
 }
@@ -203,12 +202,12 @@ function ProfileForm({ profile, onChange, onSubmit, saving }) {
   )
 }
 
-function FeedbackDialog({ open, rating, feedback, saving, onClose, onRatingChange, onFeedbackChange, onSubmit }) {
+function FeedbackDialog({ open, rating, feedback, saving, onRatingChange, onFeedbackChange, onSubmit }) {
   const needsFeedback = rating > 0 && rating < 4
   const canSubmit = rating > 0 && (!needsFeedback || feedback.trim())
 
   return (
-    <Dialog open={open} onClose={saving ? undefined : onClose} fullWidth maxWidth="xs" slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+    <Dialog open={open} disableEscapeKeyDown fullWidth maxWidth="xs" slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
       <Box component="form" onSubmit={onSubmit}>
         <DialogTitle sx={{ pb: 1, textAlign: 'center', fontWeight: 800 }}>How was your experience?</DialogTitle>
         <DialogContent sx={{ textAlign: 'center' }}>
@@ -230,7 +229,6 @@ function FeedbackDialog({ open, rating, feedback, saving, onClose, onRatingChang
           {rating >= 4 && <Typography sx={{ mt: 2, color: 'success.main', fontSize: 13.5 }}>Thank you! You’ll be taken to Google after your rating is saved.</Typography>}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button color="inherit" disabled={saving} onClick={onClose}>Maybe later</Button>
           <Button type="submit" variant="contained" color="success" disabled={saving || !canSubmit} startIcon={saving ? <CircularProgress size={17} color="inherit" /> : <RateReviewOutlined />}>
             {saving ? 'Saving…' : 'Submit rating'}
           </Button>
@@ -408,7 +406,6 @@ export default function PublicInvoicePage() {
         rating={rating}
         feedback={feedback}
         saving={savingFeedback}
-        onClose={() => setFeedbackOpen(false)}
         onRatingChange={setRating}
         onFeedbackChange={setFeedback}
         onSubmit={submitFeedback}

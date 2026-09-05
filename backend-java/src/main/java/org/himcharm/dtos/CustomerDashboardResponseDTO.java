@@ -8,6 +8,7 @@ public record CustomerDashboardResponseDTO(
         long completedProfiles,
         long upcomingBirthdays,
         long upcomingAnniversaries,
+        double averageFeedbackRating,
         LocalDateTime generatedAt
 ) {
 }
