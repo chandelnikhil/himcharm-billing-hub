@@ -1,5 +1,6 @@
 package org.himcharm.schedulers;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.himcharm.entities.Customer;
 import org.himcharm.entities.WhatsAppMessage;
@@ -12,6 +13,7 @@ import org.himcharm.whatsapp.WhatsAppClientException;
 import org.himcharm.whatsapp.WhatsAppService;
 import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -36,12 +38,16 @@ public class BirthdayAnniversaryCampaigns {
     private final WhatsAppService whatsAppService;
     private final Clock applicationClock;
     private final ThreadPoolTaskExecutor automatedCampaignTaskExecutor;
+    private final String birthdayOff;
+    private final String anniversaryOff;
 
     public BirthdayAnniversaryCampaigns(
             CustomerRepository customerRepository,
             WhatsAppMessageRepository whatsAppMessageRepository,
             WhatsAppService whatsAppService,
             Clock applicationClock,
+            @Value("${campaign.off.birthday}") String birthdayOff,
+            @Value("${campaign.off.anniversay}") String anniversaryOff,
             @Qualifier("automatedCampaignTaskExecutor") ThreadPoolTaskExecutor automatedCampaignTaskExecutor
     ) {
         this.customerRepository = customerRepository;
@@ -49,6 +55,8 @@ public class BirthdayAnniversaryCampaigns {
         this.whatsAppService = whatsAppService;
         this.applicationClock = applicationClock;
         this.automatedCampaignTaskExecutor = automatedCampaignTaskExecutor;
+        this.birthdayOff = birthdayOff;
+        this.anniversaryOff = anniversaryOff;
     }
 
     @Scheduled(
@@ -148,6 +156,7 @@ public class BirthdayAnniversaryCampaigns {
             WhatsAppMessageResponse response = whatsAppService.sendAutomatedCampaignMessage(
                     normalizedPhoneNumber,
                     customer.getName(),
+                    campaign.name().equalsIgnoreCase("birthday") ? birthdayOff : anniversaryOff,
                     offerValidUntil,
                     campaign.templateName(),
                     campaign.imageUrl()

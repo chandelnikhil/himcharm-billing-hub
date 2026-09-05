@@ -13,6 +13,7 @@ import org.himcharm.entities.Customer;
 import org.himcharm.entities.Invoice;
 import org.himcharm.services.CustomerService;
 import org.himcharm.services.InvoiceService;
+import org.himcharm.utilies.Base64UrlCodec;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -70,10 +69,7 @@ public class WhatsAppInvoiceController {
 
     private Invoice getInvoice(String encodedInvoiceNumber) {
         try {
-            String decodedInvoiceNumber = new String(
-                    Base64.getDecoder().decode(encodedInvoiceNumber),
-                    StandardCharsets.UTF_8
-            );
+            String decodedInvoiceNumber = Base64UrlCodec.decode(encodedInvoiceNumber);
             return invoiceService.getInvoiceByInvoiceNumber(decodedInvoiceNumber);
         } catch (IllegalArgumentException exception) {
             throw new IllegalStateException("Invalid invoice link");

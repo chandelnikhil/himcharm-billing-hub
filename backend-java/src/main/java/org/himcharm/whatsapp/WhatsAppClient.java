@@ -78,13 +78,14 @@ public class WhatsAppClient {
             String recipientPhoneNumber,
             String templateName,
             String languageCode,
-            List<String> bodyParameters
+            List<String> bodyParameters,
+            String dynamicUrlParameter
     ) {
         return executeTemplateMessage(
                 recipientPhoneNumber,
                 templateName,
                 languageCode,
-                List.of(bodyComponent(bodyParameters))
+                List.of(bodyComponent(bodyParameters), urlButtonComponent(dynamicUrlParameter))
         );
     }
 
@@ -163,6 +164,17 @@ public class WhatsAppClient {
                 "parameters", bodyParameters.stream()
                         .map(text -> Map.of("type", "text", "text", text))
                         .toList()
+        );
+    }
+
+    private Map<String, Object> urlButtonComponent(String dynamicUrlParameter) {
+        return Map.of(
+                "type", "button",
+                "sub_type", "url",
+                "index", "0",
+                "parameters", List.of(
+                        Map.of("type", "text", "text", dynamicUrlParameter)
+                )
         );
     }
 

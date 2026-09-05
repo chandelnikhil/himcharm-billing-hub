@@ -1,6 +1,7 @@
 package org.himcharm.whatsapp;
 
 import lombok.Getter;
+import org.himcharm.utilies.Base64UrlCodec;
 import org.himcharm.whatsapp.dto.InvoiceMessageRequest;
 import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,13 +73,15 @@ public class WhatsAppService {
                 normalizedPhoneNumber,
                 invoiceTemplateName,
                 invoiceTemplateLanguage,
-                bodyParameters
+                bodyParameters,
+                Base64UrlCodec.encode(request.billNumber().trim())
         );
     }
 
     public WhatsAppMessageResponse sendAutomatedCampaignMessage(
             String customerPhoneNumber,
             String customerName,
+            String off,
             LocalDate offerValidUntil,
             String templateName,
             String imageUrl
@@ -87,6 +90,7 @@ public class WhatsAppService {
 
         List<String> bodyParameters = List.of(
                 customerName.trim(),
+                off,
                 offerValidUntil.format(CAMPAIGN_DATE_FORMATTER)
         );
 
