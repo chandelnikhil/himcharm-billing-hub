@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.ApiResponse;
 import org.himcharm.dtos.AutomatedCampaignMessageRequestDTO;
 import org.himcharm.dtos.AutomatedCampaignMessageResponseDTO;
+import org.himcharm.dtos.ManualCampaignMessageRequestDTO;
+import org.himcharm.dtos.ManualCampaignMessageResponseDTO;
 import org.himcharm.dtos.PageResponseDTO;
 import org.himcharm.entities.Customer;
 import org.himcharm.entities.WhatsAppMessage;
@@ -43,10 +45,7 @@ public class WhatsAppMessageController {
         if (request.getPage() < 0) {
             throw new IllegalStateException("Page number cannot be negative");
         }
-        if (request.getFromDate() != null && request.getToDate() != null
-                && request.getFromDate().isAfter(request.getToDate())) {
-            throw new IllegalStateException("From date cannot be after to date");
-        }
+        validateDateRange(request.getFromDate(), request.getToDate());
         if (request.getCampaignType() != null
                 && request.getCampaignType() != WhatsAppMessageType.BIRTHDAY
                 && request.getCampaignType() != WhatsAppMessageType.ANNIVERSARY) {
@@ -56,7 +55,7 @@ public class WhatsAppMessageController {
         PageRequest pageable = PageRequest.of(
                 request.getPage(),
                 PAGE_SIZE,
-                Sort.by(Sort.Direction.DESC, "createdAt")
+                newestFirst()
         );
         Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findAutomatedCampaignMessages(
                 java.util.List.of(WhatsAppMessageType.BIRTHDAY, WhatsAppMessageType.ANNIVERSARY),
@@ -76,6 +75,41 @@ public class WhatsAppMessageController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Automated campaign messages fetched successfully", messages)
+        );
+    }
+
+    @GetMapping("/manual-campaigns")
+    public ResponseEntity<ApiResponse> getManualCampaignMessages(
+            @Valid @ModelAttribute ManualCampaignMessageRequestDTO request
+    ) {
+        if (request.getPage() < 0) {
+            throw new IllegalStateException("Page number cannot be negative");
+        }
+        validateDateRange(request.getFromDate(), request.getToDate());
+
+        PageRequest pageable = PageRequest.of(
+                request.getPage(),
+                PAGE_SIZE,
+                newestFirst()
+        );
+        Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findManualCampaignMessages(
+                WhatsAppMessageType.MANUAL_CAMAPIGN,
+                request.getCampaignId(),
+                request.getFromDate() == null ? null : request.getFromDate().atStartOfDay(),
+                request.getToDate() == null ? null : request.getToDate().plusDays(1).atStartOfDay(),
+                pageable
+        );
+        PageResponseDTO<ManualCampaignMessageResponseDTO> messages = PageResponseDTO
+                .<ManualCampaignMessageResponseDTO>builder()
+                .content(messagePage.getContent().stream().map(this::toManualCampaignResponse).toList())
+                .page(messagePage.getNumber())
+                .size(messagePage.getSize())
+                .totalElements(messagePage.getTotalElements())
+                .totalPages(messagePage.getTotalPages())
+                .build();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(HttpStatus.OK.value(), "Manual campaign messages fetched successfully", messages)
         );
     }
 
@@ -126,5 +160,30 @@ public class WhatsAppMessageController {
                 .failedAt(message.getFailedAt())
                 .sentAt(message.getSentAt())
                 .build();
+    }
+
+    private ManualCampaignMessageResponseDTO toManualCampaignResponse(WhatsAppMessage message) {
+        return ManualCampaignMessageResponseDTO.builder()
+                .id(message.getId())
+                .campaignId(message.getManualCampaign().getId())
+                .customerName(message.getCustomer().getName())
+                .customerPhoneNumber(message.getPhoneNumber())
+                .messageType(message.getMessageType())
+                .messageStatus(message.getStatus())
+                .failureReason(message.getErrorMessage())
+                .failedAt(message.getFailedAt())
+                .sentAt(message.getSentAt())
+                .createdAt(message.getCreatedAt())
+                .build();
+    }
+
+    private void validateDateRange(java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+            throw new IllegalStateException("From date cannot be after to date");
+        }
+    }
+
+    private Sort newestFirst() {
+        return Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
     }
 }

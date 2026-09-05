@@ -22,6 +22,8 @@ public class WhatsAppService {
     private final String invoiceTemplateName;
     private final String birthdayTemplateName;
     private final String anniversaryTemplateName;
+    private final String festivalTemplateName;
+    private final String festivalImageUrl;
     private final String birthdayImageUrl;
     private final String anniversaryImageUrl;
     private final String invoiceTemplateLanguage;
@@ -31,6 +33,8 @@ public class WhatsAppService {
             @Value("${whatsapp.template.invoice.name}") String invoiceTemplateName,
             @Value("${whatsapp.template.birthday.name}") String birthdayTemplateName,
             @Value("${whatsapp.template.anniversary.name}") String anniversaryTemplateName,
+            @Value("${whatsapp.template.festival.name}") String festivalTemplateName,
+            @Value("${whatsapp.template.festival.image-url}") String festivalImageUrl,
             @Value("${whatsapp.template.birthday.image-url}") String birthdayImageUrl,
             @Value("${whatsapp.template.anniversary.image-url}") String anniversaryImageUrl,
             @Value("${whatsapp.template.language:en_US}") String invoiceTemplateLanguage
@@ -39,6 +43,8 @@ public class WhatsAppService {
         this.invoiceTemplateName = invoiceTemplateName;
         this.birthdayTemplateName = birthdayTemplateName;
         this.anniversaryTemplateName = anniversaryTemplateName;
+        this.festivalTemplateName = festivalTemplateName;
+        this.festivalImageUrl = festivalImageUrl;
         this.birthdayImageUrl = birthdayImageUrl;
         this.anniversaryImageUrl = anniversaryImageUrl;
         this.invoiceTemplateLanguage = invoiceTemplateLanguage;
@@ -99,6 +105,30 @@ public class WhatsAppService {
                 templateName,
                 invoiceTemplateLanguage,
                 imageUrl,
+                bodyParameters
+        );
+    }
+
+    public WhatsAppMessageResponse sendManualCampaignMessage(
+            String customerPhoneNumber,
+            String customerName,
+            String festivalName,
+            String offerPercentage,
+            LocalDate offerValidUntil
+    ) {
+        String normalizedPhoneNumber = normalizePhoneNumber(customerPhoneNumber);
+        List<String> bodyParameters = List.of(
+                customerName.trim(),
+                festivalName,
+                offerPercentage,
+                offerValidUntil.format(CAMPAIGN_DATE_FORMATTER)
+        );
+
+        return whatsAppClient.sendImageHeaderTemplateMessage(
+                normalizedPhoneNumber,
+                festivalTemplateName,
+                invoiceTemplateLanguage,
+                festivalImageUrl,
                 bodyParameters
         );
     }

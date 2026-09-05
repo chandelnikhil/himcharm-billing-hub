@@ -44,6 +44,10 @@ public class WhatsAppMessage {
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manual_camapign_id")
+    private ManualCampaign manualCampaign;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "message_type", nullable = false, length = 30)
     private WhatsAppMessageType messageType;

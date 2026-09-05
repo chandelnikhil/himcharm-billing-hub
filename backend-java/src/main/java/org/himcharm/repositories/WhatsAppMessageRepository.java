@@ -32,4 +32,21 @@ public interface WhatsAppMessageRepository extends JpaRepository<WhatsAppMessage
             @Param("toDateTime") LocalDateTime toDateTime,
             Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"customer", "manualCampaign"})
+    @Query("""
+            SELECT message
+            FROM WhatsAppMessage message
+            WHERE message.messageType = :messageType
+              AND (:campaignId IS NULL OR message.manualCampaign.id = :campaignId)
+              AND (:fromDateTime IS NULL OR message.createdAt >= :fromDateTime)
+              AND (:toDateTime IS NULL OR message.createdAt < :toDateTime)
+            """)
+    Page<WhatsAppMessage> findManualCampaignMessages(
+            @Param("messageType") WhatsAppMessageType messageType,
+            @Param("campaignId") Long campaignId,
+            @Param("fromDateTime") LocalDateTime fromDateTime,
+            @Param("toDateTime") LocalDateTime toDateTime,
+            Pageable pageable
+    );
 }

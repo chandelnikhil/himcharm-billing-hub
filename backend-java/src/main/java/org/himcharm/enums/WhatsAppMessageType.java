@@ -4,5 +4,6 @@ public enum WhatsAppMessageType {
     INVOICE,
     BIRTHDAY,
     ANNIVERSARY,
-    FESTIVAL
+    FESTIVAL,
+    MANUAL_CAMAPIGN
 }

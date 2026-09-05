@@ -39,6 +39,12 @@ export const campaignsApi = {
   listAutomatedMessages: (params = {}) => apiClient
     .get('/whatsapp/messages/automated-campaigns', { params })
     .then(unwrap),
+  startManualCampaign: (campaign) => apiClient
+    .post('/manual-campaigns', campaign)
+    .then(unwrap),
+  listManualMessages: (params = {}) => apiClient
+    .get('/whatsapp/messages/manual-campaigns', { params })
+    .then(unwrap),
 }
 
 export const publicInvoiceApi = {

@@ -89,6 +89,20 @@ public class WhatsAppClient {
         );
     }
 
+    public WhatsAppMessageResponse sendTemplateMessage(
+            String recipientPhoneNumber,
+            String templateName,
+            String languageCode,
+            List<String> bodyParameters
+    ) {
+        return executeTemplateMessage(
+                recipientPhoneNumber,
+                templateName,
+                languageCode,
+                List.of(bodyComponent(bodyParameters))
+        );
+    }
+
     public WhatsAppMessageResponse sendImageHeaderTemplateMessage(
             String recipientPhoneNumber,
             String templateName,
