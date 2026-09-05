@@ -3,6 +3,7 @@ package org.himcharm.controllers;
 import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.ApiResponse;
 import org.himcharm.dtos.DashboardResponseDTO;
+import org.himcharm.dtos.CustomerDashboardResponseDTO;
 import org.himcharm.services.DashboardService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,14 @@ public class DashboardController {
         DashboardResponseDTO dashboard = dashboardService.getDashboard(fromDate, toDate, storeId);
         return ResponseEntity.ok(
                 ApiResponse.success(HttpStatus.OK.value(), "Dashboard fetched successfully", dashboard)
+        );
+    }
+
+    @GetMapping("/customers")
+    public ResponseEntity<ApiResponse> getCustomerDashboardGraph() {
+        CustomerDashboardResponseDTO dashboard = dashboardService.getCustomerDashboardGraph();
+        return ResponseEntity.ok(
+                ApiResponse.success(HttpStatus.OK.value(), "Customer dashboard fetched successfully", dashboard)
         );
     }
 }

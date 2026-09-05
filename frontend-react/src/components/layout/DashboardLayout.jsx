@@ -20,7 +20,6 @@ import {
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded'
-import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded'
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded'
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded'
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
@@ -37,7 +36,6 @@ const drawerWidth = 252
 
 const navigation = [
   { label: 'Dashboard', path: '/dashboard', icon: DashboardRoundedIcon },
-  { label: 'Analytics', path: '/analytics', icon: AnalyticsRoundedIcon, soon: true },
   { label: 'Invoices', path: '/invoices', icon: ReceiptLongRoundedIcon },
   { label: 'Customers', path: '/customers', icon: PeopleAltRoundedIcon },
   { label: 'Campaigns', path: '/campaigns', icon: CampaignRoundedIcon },

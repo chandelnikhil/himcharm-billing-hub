@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Avatar, Box, Button, CircularProgress, MenuItem, TextField, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Tooltip } from 'chart.js'
+import { ArcElement, BarController, BarElement, CategoryScale, Chart as ChartJS, Legend, LineController, LineElement, LinearScale, PointElement, Tooltip } from 'chart.js'
 import { Chart } from 'react-chartjs-2'
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded'
 import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded'
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded'
 import BalanceRoundedIcon from '@mui/icons-material/BalanceRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded'
+import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded'
 import PageHeader from '../components/common/PageHeader'
 import ModuleCard from '../components/common/ModuleCard'
 import { dashboardApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
-ChartJS.register(BarController, LineController, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend)
+ChartJS.register(ArcElement, BarController, LineController, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Tooltip, Legend)
 
 const toIsoDate = (date) => {
   const year = date.getFullYear()
@@ -38,6 +41,42 @@ const emptyMetrics = {
   newAverageOrderValue: 0,
   repeatAverageOrderValue: 0,
 }
+
+const emptyCustomerDashboard = {
+  activity: {
+    totalCustomers: 0,
+    activeInThreeMonths: 0,
+    dormantThreeToSixMonths: 0,
+    dormantSixToTwelveMonths: 0,
+    dormantTwelvePlusMonths: 0,
+  },
+  frequency: {
+    oneTimeVisit: 0,
+    twoTimesVisits: 0,
+    threeTimesVisits: 0,
+    fourTimesVisits: 0,
+    fivePlusTimesVisits: 0,
+    tenPlusTimesVisits: 0,
+  },
+  completedProfiles: 0,
+  upcomingBirthdays: 0,
+  upcomingAnniversaries: 0,
+}
+
+const activitySegments = [
+  { key: 'activeInThreeMonths', label: 'Active in 3 months', color: '#20c96b' },
+  { key: 'dormantThreeToSixMonths', label: 'Dormant 3–6 months', color: '#aa42ef' },
+  { key: 'dormantSixToTwelveMonths', label: 'Dormant 6–12 months', color: '#5b12ed' },
+  { key: 'dormantTwelvePlusMonths', label: 'Dormant 12+ months', color: '#ff4148' },
+]
+
+const frequencySegments = [
+  { key: 'twoTimesVisits', label: '2 Times Visits', color: '#ffbf00' },
+  { key: 'threeTimesVisits', label: '3 Times Visits', color: '#20c96b' },
+  { key: 'fourTimesVisits', label: '4 Times Visits', color: '#25a4cc' },
+  { key: 'fivePlusTimesVisits', label: '5–9 Times Visits', color: '#ff4148' },
+  { key: 'tenPlusTimesVisits', label: '10+ Times Visits', color: '#aa42ef' },
+]
 
 const formatCompact = (value, currency = false) => {
   const amount = Number(value || 0)
@@ -76,12 +115,99 @@ function MetricCard({ title, value, icon: Icon, iconColor, iconBackground, newVa
   )
 }
 
+function FrequencyRow({ label, value, maximum, color }) {
+  const width = maximum ? Math.max((Number(value || 0) / maximum) * 100, value ? 2 : 0) : 0
+  return (
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '115px minmax(80px, 1fr) 70px', sm: '145px minmax(120px, 1fr) 85px' }, alignItems: 'center', gap: 1.5 }}>
+      <Typography color="text.secondary" sx={{ fontSize: 13 }}>{label}</Typography>
+      <Box sx={{ height: 30, overflow: 'hidden', borderRadius: 1, bgcolor: '#e5eaf2' }}>
+        <Box sx={{ width: `${width}%`, height: '100%', borderRadius: 1, bgcolor: color }} />
+      </Box>
+      <Typography sx={{ fontSize: 13, fontWeight: 750 }}>{formatPrecise(value)}</Typography>
+    </Box>
+  )
+}
+
+function CustomerSummaryCard({ title, subtitle, value, icon: Icon, color, background }) {
+  return (
+    <ModuleCard sx={{ minHeight: 175, p: 2.5, boxShadow: 'none', display: 'flex', justifyContent: 'space-between', overflow: 'hidden' }}>
+      <Box>
+        <Typography sx={{ fontSize: 17, fontWeight: 700 }}>{title}</Typography>
+        {subtitle && <Typography color="text.secondary" sx={{ mt: .2, fontSize: 12, fontStyle: 'italic' }}>{subtitle}</Typography>}
+        <Typography sx={{ mt: 2.2, fontSize: 30, fontWeight: 800 }}>{formatPrecise(value)}</Typography>
+      </Box>
+      <Avatar sx={{ alignSelf: 'flex-end', width: 72, height: 72, color, bgcolor: background }}><Icon sx={{ fontSize: 42 }} /></Avatar>
+    </ModuleCard>
+  )
+}
+
+function CustomerDashboardSection({ dashboard, loading, error, onRetry }) {
+  const activity = dashboard.activity || emptyCustomerDashboard.activity
+  const frequency = dashboard.frequency || emptyCustomerDashboard.frequency
+  const maximumFrequency = Math.max(...frequencySegments.map(({ key }) => Number(frequency[key] || 0)), 1)
+  const activityChart = {
+    labels: activitySegments.map(({ label }) => label),
+    datasets: [{
+      data: activitySegments.map(({ key }) => activity[key] || 0),
+      backgroundColor: activitySegments.map(({ color }) => color),
+      borderColor: '#fff',
+      borderWidth: 4,
+      hoverOffset: 4,
+    }],
+  }
+
+  return (
+    <Box sx={{ position: 'relative', mt: 3, bgcolor: '#e8f7f1', border: '1px solid #d8eee5', borderRadius: 3, p: { xs: 1.5, sm: 2.2 } }}>
+      <Typography variant="h5" sx={{ mb: 1.8 }}>Customers</Typography>
+      {error && <Alert severity="error" action={<Button color="inherit" size="small" onClick={onRetry}>Retry</Button>} sx={{ mb: 2 }}>{error}</Alert>}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2 }}>
+        <ModuleCard sx={{ p: { xs: 2, sm: 2.5 }, boxShadow: 'none' }}>
+          <Typography sx={{ fontSize: 19, fontWeight: 700 }}>Customer Activity</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'minmax(190px, .85fr) minmax(230px, 1fr)' }, alignItems: 'center', gap: 2, mt: 2 }}>
+            <Box>
+              <Typography color="text.secondary" sx={{ fontSize: 13 }}>Total Customers</Typography>
+              <Typography sx={{ mb: 2.2, fontSize: 28, fontWeight: 800 }}>{formatPrecise(activity.totalCustomers)}</Typography>
+              {activitySegments.map((segment) => (
+                <Box key={segment.key} sx={{ mb: 1.25 }}>
+                  <Typography color="text.secondary" sx={{ fontSize: 12.5 }}><Box component="span" sx={{ display: 'inline-block', width: 9, height: 9, mr: .8, borderRadius: '50%', bgcolor: segment.color }} />{segment.label}</Typography>
+                  <Typography sx={{ pl: 2.1, fontSize: 20, fontWeight: 800 }}>{formatPrecise(activity[segment.key])}</Typography>
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ height: { xs: 240, sm: 300 } }}><Chart type="doughnut" data={activityChart} options={{ responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { display: false } } }} /></Box>
+          </Box>
+        </ModuleCard>
+
+        <ModuleCard sx={{ p: { xs: 2, sm: 2.5 }, boxShadow: 'none' }}>
+          <Typography sx={{ mb: 3, fontSize: 19, fontWeight: 700 }}>Customers Frequency</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '115px 1fr', sm: '145px 1fr' }, alignItems: 'center', gap: 1.5, mb: 3 }}>
+            <Typography color="text.secondary" sx={{ fontSize: 13 }}>1 Time Visit</Typography>
+            <Typography sx={{ fontSize: 28, fontWeight: 800 }}>{formatPrecise(frequency.oneTimeVisit)}</Typography>
+          </Box>
+          <Box sx={{ display: 'grid', gap: 2.2 }}>
+            {frequencySegments.map((segment) => <FrequencyRow key={segment.key} {...segment} value={frequency[segment.key]} maximum={maximumFrequency} />)}
+          </Box>
+        </ModuleCard>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2, mt: 2 }}>
+        <CustomerSummaryCard title="Total Profiles Completed" subtitle="Overall" value={dashboard.completedProfiles} icon={AccountCircleRoundedIcon} color="#16a364" background="#e4f8ef" />
+        <CustomerSummaryCard title="Upcoming Birthdays" subtitle="within next 30 days" value={dashboard.upcomingBirthdays} icon={CakeRoundedIcon} color="#6955e7" background="#efedff" />
+        <CustomerSummaryCard title="Upcoming Anniversaries" subtitle="within next 30 days" value={dashboard.upcomingAnniversaries} icon={FavoriteRoundedIcon} color="#ec4f78" background="#ffedf2" />
+      </Box>
+      {loading && <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', bgcolor: alpha('#fff', .72), zIndex: 2, borderRadius: 3 }}><CircularProgress size={34} /></Box>}
+    </Box>
+  )
+}
+
 export default function DashboardPage() {
   const [stores, setStores] = useState([])
   const [filters, setFilters] = useState(initialFilters)
   const [dashboard, setDashboard] = useState({ metrics: emptyMetrics, trend: [] })
+  const [customerDashboard, setCustomerDashboard] = useState(emptyCustomerDashboard)
   const [loading, setLoading] = useState(true)
+  const [customerLoading, setCustomerLoading] = useState(true)
   const [error, setError] = useState('')
+  const [customerError, setCustomerError] = useState('')
 
   const loadDashboard = useCallback(async (requestedFilters) => {
     setLoading(true)
@@ -100,13 +226,27 @@ export default function DashboardPage() {
     }
   }, [])
 
+  const loadCustomerDashboard = useCallback(async () => {
+    setCustomerLoading(true)
+    setCustomerError('')
+    try {
+      const result = await dashboardApi.getCustomers()
+      setCustomerDashboard(result || emptyCustomerDashboard)
+    } catch (requestError) {
+      setCustomerError(getApiError(requestError, 'Unable to load customer dashboard data'))
+    } finally {
+      setCustomerLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     const task = window.setTimeout(() => {
       storesApi.list().then((result) => setStores(result || [])).catch(() => setStores([]))
       loadDashboard(initialFilters)
+      loadCustomerDashboard()
     }, 0)
     return () => window.clearTimeout(task)
-  }, [loadDashboard])
+  }, [loadCustomerDashboard, loadDashboard])
 
   const chartData = useMemo(() => ({
     labels: dashboard.trend.map((point) => new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(new Date(`${point.date}T00:00:00`))),
@@ -138,7 +278,22 @@ export default function DashboardPage() {
     <>
       <PageHeader title="Business at a Glance ✨" description="Track revenue and billing performance across your stores." />
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1.5, mb: 2.5 }}>
-        <TextField select label="Store" value={filters.storeId} onChange={(event) => setFilters((current) => ({ ...current, storeId: event.target.value }))} sx={{ minWidth: { xs: '100%', sm: 240 } }}>
+        <TextField
+          select
+          label="Store"
+          value={filters.storeId}
+          onChange={(event) => setFilters((current) => ({ ...current, storeId: event.target.value }))}
+          sx={{ minWidth: { xs: '100%', sm: 240 } }}
+          slotProps={{
+            inputLabel: { shrink: true },
+            select: {
+              displayEmpty: true,
+              renderValue: (selectedStoreId) => selectedStoreId === ''
+                ? 'All stores'
+                : stores.find((store) => String(store.id) === String(selectedStoreId))?.name || 'All stores',
+            },
+          }}
+        >
           <MenuItem value="">All stores</MenuItem>
           {stores.filter((store) => store.active).map((store) => <MenuItem key={store.id} value={store.id}>{store.name}</MenuItem>)}
         </TextField>
@@ -161,6 +316,7 @@ export default function DashboardPage() {
         </Box>
         {loading && <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', bgcolor: alpha('#fff', .72), zIndex: 2, borderRadius: 3 }}><CircularProgress size={34} /></Box>}
       </Box>
+      <CustomerDashboardSection dashboard={customerDashboard} loading={customerLoading} error={customerError} onRetry={loadCustomerDashboard} />
     </>
   )
 }

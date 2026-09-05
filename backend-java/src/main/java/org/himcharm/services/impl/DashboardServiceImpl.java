@@ -4,8 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.himcharm.dtos.DashboardMetricsResponseDTO;
 import org.himcharm.dtos.DashboardResponseDTO;
 import org.himcharm.dtos.DashboardTrendPointResponseDTO;
+import org.himcharm.dtos.CustomerActivityResponseDTO;
+import org.himcharm.dtos.CustomerDashboardResponseDTO;
+import org.himcharm.dtos.CustomerFrequencyResponseDTO;
 import org.himcharm.entities.Invoice;
+import org.himcharm.repositories.CustomerRepository;
 import org.himcharm.repositories.InvoiceRepository;
+import org.himcharm.repositories.projections.CustomerActivityProjection;
+import org.himcharm.repositories.projections.CustomerFrequencyProjection;
+import org.himcharm.repositories.projections.CustomerSpecialDatesProjection;
 import org.himcharm.services.DashboardService;
 import org.himcharm.services.StoreService;
 import org.springframework.stereotype.Service;
@@ -13,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.MonthDay;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,9 +35,12 @@ public class DashboardServiceImpl implements DashboardService {
 
     private static final int DEFAULT_RANGE_DAYS = 30;
     private static final int MAX_RANGE_DAYS = 366;
+    private static final int UPCOMING_DAYS = 30;
 
     private final InvoiceRepository invoiceRepository;
+    private final CustomerRepository customerRepository;
     private final StoreService storeService;
+    private final Clock applicationClock;
 
     @Override
     @Transactional(readOnly = true)
@@ -116,6 +128,64 @@ public class DashboardServiceImpl implements DashboardService {
                 .trend(trend)
                 .generatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomerDashboardResponseDTO getCustomerDashboardGraph() {
+        LocalDate today = LocalDate.now(applicationClock);
+        CustomerActivityProjection activity = customerRepository.getCustomerActivity(
+                today.minusMonths(3).atStartOfDay(),
+                today.minusMonths(6).atStartOfDay(),
+                today.minusMonths(12).atStartOfDay()
+        );
+        CustomerFrequencyProjection frequency = customerRepository.getCustomerFrequency();
+
+        long upcomingBirthdays = 0;
+        long upcomingAnniversaries = 0;
+        LocalDate upcomingThrough = today.plusDays(UPCOMING_DAYS);
+        for (CustomerSpecialDatesProjection specialDates : customerRepository.findCustomerSpecialDates()) {
+            if (isUpcoming(specialDates.getDateOfBirth(), today, upcomingThrough)) {
+                upcomingBirthdays++;
+            }
+            if (isUpcoming(specialDates.getAnniversaryDate(), today, upcomingThrough)) {
+                upcomingAnniversaries++;
+            }
+        }
+
+        return new CustomerDashboardResponseDTO(
+                new CustomerActivityResponseDTO(
+                        activity.getTotalCustomers(),
+                        activity.getActiveInThreeMonths(),
+                        activity.getDormantThreeToSixMonths(),
+                        activity.getDormantSixToTwelveMonths(),
+                        activity.getDormantTwelvePlusMonths()
+                ),
+                new CustomerFrequencyResponseDTO(
+                        frequency.getOneTimeVisit(),
+                        frequency.getTwoTimesVisits(),
+                        frequency.getThreeTimesVisits(),
+                        frequency.getFourTimesVisits(),
+                        frequency.getFivePlusTimesVisits(),
+                        frequency.getTenPlusTimesVisits()
+                ),
+                customerRepository.countCompletedProfiles(),
+                upcomingBirthdays,
+                upcomingAnniversaries,
+                LocalDateTime.now(applicationClock)
+        );
+    }
+
+    private boolean isUpcoming(LocalDate eventDate, LocalDate today, LocalDate upcomingThrough) {
+        if (eventDate == null) {
+            return false;
+        }
+        MonthDay eventMonthDay = MonthDay.from(eventDate);
+        LocalDate nextOccurrence = eventMonthDay.atYear(today.getYear());
+        if (nextOccurrence.isBefore(today)) {
+            nextOccurrence = eventMonthDay.atYear(today.getYear() + 1);
+        }
+        return !nextOccurrence.isAfter(upcomingThrough);
     }
 
     private Set<Long> getFirstInvoiceIds(List<Invoice> invoices) {

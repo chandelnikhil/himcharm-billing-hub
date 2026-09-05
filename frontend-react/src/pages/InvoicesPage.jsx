@@ -137,7 +137,28 @@ export default function InvoicesPage() {
           <Box sx={{ width: { xs: '100%', md: 280 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Search</Typography><TextField fullWidth size="small" placeholder="Search this page…" value={query} onChange={(event) => setQuery(event.target.value)} InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon color="action" fontSize="small" /></InputAdornment> }} /></Box>
           <Box sx={{ width: { xs: '100%', sm: 180 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Start date</Typography><TextField fullWidth size="small" type="date" value={filters.fromDate} onChange={(event) => setFilters((current) => ({ ...current, fromDate: event.target.value }))} inputProps={{ 'aria-label': 'Start date' }} /></Box>
           <Box sx={{ width: { xs: '100%', sm: 180 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>End date</Typography><TextField fullWidth size="small" type="date" value={filters.toDate} onChange={(event) => setFilters((current) => ({ ...current, toDate: event.target.value }))} inputProps={{ 'aria-label': 'End date' }} /></Box>
-          <Box sx={{ width: { xs: '100%', sm: 170 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Store</Typography><TextField fullWidth select size="small" value={filters.storeId} onChange={(event) => setFilters((current) => ({ ...current, storeId: event.target.value }))} inputProps={{ 'aria-label': 'Store' }}><MenuItem value="">All stores</MenuItem>{stores.map((store) => <MenuItem key={store.id} value={store.id}>{store.storeCode}</MenuItem>)}</TextField></Box>
+          <Box sx={{ width: { xs: '100%', sm: 170 } }}>
+            <Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Store</Typography>
+            <TextField
+              fullWidth
+              select
+              size="small"
+              value={filters.storeId}
+              onChange={(event) => setFilters((current) => ({ ...current, storeId: event.target.value }))}
+              inputProps={{ 'aria-label': 'Store' }}
+              slotProps={{
+                select: {
+                  displayEmpty: true,
+                  renderValue: (selectedStoreId) => selectedStoreId === ''
+                    ? 'All stores'
+                    : storeMap.get(String(selectedStoreId))?.storeCode || 'All stores',
+                },
+              }}
+            >
+              <MenuItem value="">All stores</MenuItem>
+              {stores.map((store) => <MenuItem key={store.id} value={store.id}>{store.storeCode}</MenuItem>)}
+            </TextField>
+          </Box>
           <Button variant="contained" onClick={applyFilters} sx={{ height: 40 }}>Apply</Button>
           <Button color="inherit" onClick={clearFilters} disabled={!filters.fromDate && !filters.toDate && !filters.storeId && !appliedFilters.fromDate && !appliedFilters.toDate && !appliedFilters.storeId} sx={{ height: 40 }}>Clear</Button>
           <Typography color="text.secondary" sx={{ ml: { sm: 'auto' }, fontSize: 13 }}>{totalInvoices} invoice{totalInvoices === 1 ? '' : 's'}</Typography>

@@ -33,6 +33,7 @@ export const invoicesApi = {
 
 export const dashboardApi = {
   get: (params = {}) => apiClient.get('/dashboard', { params }).then(unwrap),
+  getCustomers: () => apiClient.get('/dashboard/customers').then(unwrap),
 }
 
 export const campaignsApi = {
