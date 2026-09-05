@@ -3,7 +3,7 @@ import axios from 'axios'
 const TOKEN_KEY = 'himcharm_access_token'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:9090/himcharm',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://banker-bannister-darkroom.ngrok-free.dev/himcharm',
   headers: {
     'Content-Type': 'application/json',
   },
