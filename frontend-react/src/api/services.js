@@ -55,4 +55,7 @@ export const publicInvoiceApi = {
   updateProfile: (invoiceNumber, profile) => apiClient
     .put('/whatsapp/invoice/profile', profile, { params: { invoiceNumber } })
     .then(unwrap),
+  saveFeedback: (invoiceNumber, feedback) => apiClient
+    .post('/whatsapp/invoice/feedback', feedback, { params: { invoiceNumber } })
+    .then(unwrap),
 }

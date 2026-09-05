@@ -5,9 +5,14 @@ import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
+  Rating,
   Select,
   Snackbar,
   TextField,
@@ -198,6 +203,43 @@ function ProfileForm({ profile, onChange, onSubmit, saving }) {
   )
 }
 
+function FeedbackDialog({ open, rating, feedback, saving, onClose, onRatingChange, onFeedbackChange, onSubmit }) {
+  const needsFeedback = rating > 0 && rating < 4
+  const canSubmit = rating > 0 && (!needsFeedback || feedback.trim())
+
+  return (
+    <Dialog open={open} onClose={saving ? undefined : onClose} fullWidth maxWidth="xs" slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+      <Box component="form" onSubmit={onSubmit}>
+        <DialogTitle sx={{ pb: 1, textAlign: 'center', fontWeight: 800 }}>How was your experience?</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }}>
+          <Typography color="text.secondary" sx={{ mb: 2, fontSize: 14 }}>Your rating helps us serve you better.</Typography>
+          <Rating value={rating} onChange={(_, value) => onRatingChange(value || 0)} size="large" sx={{ fontSize: 46 }} />
+          {needsFeedback && (
+            <TextField
+              autoFocus
+              fullWidth
+              multiline
+              minRows={3}
+              label="Tell us what we can improve"
+              value={feedback}
+              onChange={(event) => onFeedbackChange(event.target.value)}
+              inputProps={{ maxLength: 2000 }}
+              sx={{ mt: 2.5, textAlign: 'left' }}
+            />
+          )}
+          {rating >= 4 && <Typography sx={{ mt: 2, color: 'success.main', fontSize: 13.5 }}>Thank you! You’ll be taken to Google after your rating is saved.</Typography>}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button color="inherit" disabled={saving} onClick={onClose}>Maybe later</Button>
+          <Button type="submit" variant="contained" color="success" disabled={saving || !canSubmit} startIcon={saving ? <CircularProgress size={17} color="inherit" /> : <RateReviewOutlined />}>
+            {saving ? 'Saving…' : 'Submit rating'}
+          </Button>
+        </DialogActions>
+      </Box>
+    </Dialog>
+  )
+}
+
 export default function PublicInvoicePage() {
   const [searchParams] = useSearchParams()
   const invoiceNumber = searchParams.get('invoiceNumber') || ''
@@ -208,6 +250,10 @@ export default function PublicInvoicePage() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [notice, setNotice] = useState(null)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [feedback, setFeedback] = useState('')
+  const [savingFeedback, setSavingFeedback] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -219,6 +265,7 @@ export default function PublicInvoicePage() {
     publicInvoiceApi.getReviewDetails(invoiceNumber, controller.signal)
       .then((data) => {
         setDetails(data)
+        setFeedbackOpen(true)
         const customer = data.customerProfile || {}
         setProfile({
           ...emptyProfile,
@@ -282,6 +329,35 @@ export default function PublicInvoicePage() {
     }
   }
 
+  const submitFeedback = async (event) => {
+    event.preventDefault()
+    if (!rating || (rating < 4 && !feedback.trim())) return
+
+    const shouldOpenGoogle = rating >= 4 && Boolean(details?.googleReviewUrl)
+    const googleReviewTab = shouldOpenGoogle ? window.open('about:blank', '_blank') : null
+    if (googleReviewTab) googleReviewTab.opener = null
+
+    setSavingFeedback(true)
+    try {
+      await publicInvoiceApi.saveFeedback(invoiceNumber, {
+        rating,
+        feedback: rating < 4 ? feedback.trim() : null,
+      })
+      setFeedbackOpen(false)
+      setNotice({ severity: 'success', message: 'Thank you. Your feedback has been saved.' })
+      if (googleReviewTab) {
+        googleReviewTab.location.href = details.googleReviewUrl
+      } else if (shouldOpenGoogle) {
+        window.open(details.googleReviewUrl, '_blank', 'noopener,noreferrer')
+      }
+    } catch (requestError) {
+      googleReviewTab?.close()
+      setNotice({ severity: 'error', message: getApiError(requestError, 'We could not save your feedback. Please try again.') })
+    } finally {
+      setSavingFeedback(false)
+    }
+  }
+
   return (
     <div className="public-invoice-page">
       <main className="public-content">
@@ -295,7 +371,7 @@ export default function PublicInvoicePage() {
               variant="contained"
               startIcon={<RateReviewOutlined />}
               disabled={!details?.googleReviewUrl}
-              onClick={() => window.open(details.googleReviewUrl, '_blank', 'noopener,noreferrer')}
+              onClick={() => setFeedbackOpen(true)}
             >
               Rate us on Google
             </Button>
@@ -327,6 +403,16 @@ export default function PublicInvoicePage() {
       <Snackbar open={Boolean(notice)} autoHideDuration={5000} onClose={() => setNotice(null)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
         {notice ? <Alert severity={notice.severity} onClose={() => setNotice(null)}>{notice.message}</Alert> : undefined}
       </Snackbar>
+      <FeedbackDialog
+        open={feedbackOpen}
+        rating={rating}
+        feedback={feedback}
+        saving={savingFeedback}
+        onClose={() => setFeedbackOpen(false)}
+        onRatingChange={setRating}
+        onFeedbackChange={setFeedback}
+        onSubmit={submitFeedback}
+      />
     </div>
   )
 }

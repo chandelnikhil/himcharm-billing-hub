@@ -32,6 +32,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,10 +68,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setSubtotal(ZERO);
         invoice.setTotalAmount(ZERO);
 
+        Map<Long, Product> productsById = getProductsByIds(invoice);
         double subtotal = ZERO;
         double totalAfterItemDiscounts = ZERO;
         for (InvoiceItem item : invoice.getItems()) {
-            Product product = findProduct(item.getProduct());
+            Product product = resolveProduct(item.getProduct(), productsById);
             String itemName = resolveItemName(item, product);
             double unitPrice = money(item.getUnitPrice());
             double discountPercentage = money(item.getDiscountPercentage());
@@ -173,11 +178,28 @@ public class InvoiceServiceImpl implements InvoiceService {
                 ));
     }
 
-    private Product findProduct(Product product) {
+    private Map<Long, Product> getProductsByIds(Invoice invoice) {
+        Set<Long> productIds = invoice.getItems().stream()
+                .map(InvoiceItem::getProduct)
+                .filter(product -> product != null && product.getId() != null)
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+        if (productIds.isEmpty()) {
+            return Map.of();
+        }
+        return productService.getProductsByIds(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+    }
+
+    private Product resolveProduct(Product product, Map<Long, Product> productsById) {
         if (product == null || product.getId() == null) {
             return null;
         }
-        return productService.getProduct(product.getId());
+        Product resolvedProduct = productsById.get(product.getId());
+        if (resolvedProduct == null) {
+            throw new ResourceNotFoundException("Product not found with id: " + product.getId());
+        }
+        return resolvedProduct;
     }
 
     private String resolveItemName(InvoiceItem item, Product product) {

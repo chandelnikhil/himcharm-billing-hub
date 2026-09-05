@@ -8,6 +8,7 @@ import org.himcharm.services.ProductService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -31,6 +32,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public Product getProduct(Long id) {
         return findProduct(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> getProductsByIds(Collection<Long> ids) {
+        return productRepository.findAllById(ids);
     }
 
     @Override
