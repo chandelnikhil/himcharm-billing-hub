@@ -361,7 +361,7 @@ export default function CampaignsPage() {
         </Box>
 
         <TableContainer>
-          <Table sx={{ minWidth: 1420 }}>
+          <Table sx={{ minWidth: 1680 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Customer</TableCell>
@@ -373,11 +373,13 @@ export default function CampaignsPage() {
                 <TableCell>Failure reason</TableCell>
                 <TableCell>Failed at</TableCell>
                 <TableCell>Sent at</TableCell>
+                <TableCell>Delivered at</TableCell>
+                <TableCell>Read at</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {(loading || error || !messages.length) ? (
-                <TableState columns={9} loading={loading} error={error} emptyMessage="No automated messages match the selected filters." onRetry={() => loadMessages()} />
+                <TableState columns={11} loading={loading} error={error} emptyMessage="No automated messages match the selected filters." onRetry={() => loadMessages()} />
               ) : messages.map((message) => (
                 <TableRow key={message.id} hover>
                   <TableCell><Typography sx={{ fontSize: 13.5, fontWeight: 750 }}>{message.customerName || '—'}</Typography></TableCell>
@@ -391,6 +393,8 @@ export default function CampaignsPage() {
                   <TableCell sx={{ minWidth: 210, maxWidth: 300 }}><Typography title={message.failureReason || ''} noWrap sx={{ fontSize: 13, color: message.failureReason ? 'error.main' : 'text.secondary' }}>{message.failureReason || '—'}</Typography></TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.failedAt)}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.sentAt)}</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.deliveredAt)}</TableCell>
+                  <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.readAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

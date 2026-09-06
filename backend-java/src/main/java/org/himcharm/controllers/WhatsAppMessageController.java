@@ -159,6 +159,8 @@ public class WhatsAppMessageController {
                 .failureReason(message.getErrorMessage())
                 .failedAt(message.getFailedAt())
                 .sentAt(message.getSentAt())
+                .deliveredAt(message.getDeliveredAt())
+                .readAt(message.getReadAt())
                 .build();
     }
 

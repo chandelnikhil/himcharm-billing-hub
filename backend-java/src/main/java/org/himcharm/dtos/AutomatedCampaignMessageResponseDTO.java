@@ -28,4 +28,6 @@ public class AutomatedCampaignMessageResponseDTO {
     private String failureReason;
     private LocalDateTime failedAt;
     private LocalDateTime sentAt;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime readAt;
 }

@@ -156,8 +156,6 @@ public class BirthdayAnniversaryCampaigns {
 
     @PostConstruct
     public void send() {
-//        sendBirthdayCampaign();
-        sendAnniversaryCampaign();
+        sendBirthdayCampaign();
     }
-
 }
