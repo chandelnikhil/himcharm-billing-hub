@@ -58,8 +58,8 @@ public class ManualCampaignService {
                 campaign,
                 phoneNumber -> whatsAppService.sendManualCampaignMessage(
                         phoneNumber,
-                        customer.getName(),
                         festivalName,
+                        customer.getName(),
                         offerPercentage,
                         request.validUpTo(),
                         campaignImageService.getCampaignImageUrl(CampaignImageType.FESTIVAL)
