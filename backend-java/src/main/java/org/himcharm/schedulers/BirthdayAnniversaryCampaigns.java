@@ -1,10 +1,13 @@
 package org.himcharm.schedulers;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.himcharm.entities.Customer;
 import org.himcharm.enums.WhatsAppMessageType;
+import org.himcharm.enums.CampaignImageType;
 import org.himcharm.repositories.CustomerRepository;
 import org.himcharm.services.CampaignBatchExecutor;
+import org.himcharm.services.CampaignImageService;
 import org.himcharm.services.CampaignMessageSender;
 import org.himcharm.whatsapp.WhatsAppService;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +29,7 @@ public class BirthdayAnniversaryCampaigns {
     private final WhatsAppService whatsAppService;
     private final CampaignBatchExecutor batchExecutor;
     private final CampaignMessageSender messageSender;
+    private final CampaignImageService campaignImageService;
     private final Clock applicationClock;
     private final String birthdayOff;
     private final String anniversaryOff;
@@ -35,6 +39,7 @@ public class BirthdayAnniversaryCampaigns {
             WhatsAppService whatsAppService,
             CampaignBatchExecutor batchExecutor,
             CampaignMessageSender messageSender,
+            CampaignImageService campaignImageService,
             Clock applicationClock,
             @Value("${campaign.off.birthday}") String birthdayOff,
             @Value("${campaign.off.anniversay}") String anniversaryOff
@@ -43,6 +48,7 @@ public class BirthdayAnniversaryCampaigns {
         this.whatsAppService = whatsAppService;
         this.batchExecutor = batchExecutor;
         this.messageSender = messageSender;
+        this.campaignImageService = campaignImageService;
         this.applicationClock = applicationClock;
         this.birthdayOff = birthdayOff;
         this.anniversaryOff = anniversaryOff;
@@ -57,7 +63,7 @@ public class BirthdayAnniversaryCampaigns {
                 "birthday",
                 WhatsAppMessageType.BIRTHDAY,
                 whatsAppService.getBirthdayTemplateName(),
-                whatsAppService.getBirthdayImageUrl(),
+                campaignImageService.getCampaignImageUrl(CampaignImageType.BIRTHDAY),
                 customerRepository::findCustomersByBirthday
         );
     }
@@ -71,7 +77,7 @@ public class BirthdayAnniversaryCampaigns {
                 "anniversary",
                 WhatsAppMessageType.ANNIVERSARY,
                 whatsAppService.getAnniversaryTemplateName(),
-                whatsAppService.getAnniversaryImageUrl(),
+                campaignImageService.getCampaignImageUrl(CampaignImageType.ANNIVERSARY),
                 customerRepository::findCustomersByAnniversary
         );
     }
@@ -145,6 +151,13 @@ public class BirthdayAnniversaryCampaigns {
             String templateName,
             String imageUrl
     ) {
+    }
+
+
+    @PostConstruct
+    public void send() {
+//        sendBirthdayCampaign();
+        sendAnniversaryCampaign();
     }
 
 }

@@ -6,6 +6,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -45,7 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return UNFILTERED_PATHS.stream().anyMatch(path::startsWith);
+        boolean isPublicImageRequest = HttpMethod.GET.matches(request.getMethod())
+                && path.startsWith("/images/");
+        return isPublicImageRequest || UNFILTERED_PATHS.stream().anyMatch(path::startsWith);
     }
 
     @Override

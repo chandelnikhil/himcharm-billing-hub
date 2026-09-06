@@ -46,6 +46,18 @@ export const campaignsApi = {
   listManualMessages: (params = {}) => apiClient
     .get('/whatsapp/messages/manual-campaigns', { params })
     .then(unwrap),
+  uploadImage: (type, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiClient
+      .post(`/images/${type}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then(unwrap)
+  },
+  getImageUrl: (type, version = '') => {
+    const baseUrl = String(apiClient.defaults.baseURL || '').replace(/\/$/, '')
+    const cacheBuster = version ? `?v=${encodeURIComponent(version)}` : ''
+    return `${baseUrl}/images/${type}${cacheBuster}`
+  },
 }
 
 export const publicInvoiceApi = {

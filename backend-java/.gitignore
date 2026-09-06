@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Runtime campaign uploads (the directory itself is kept in the repository).
+campaign-images/*
+!campaign-images/.gitkeep

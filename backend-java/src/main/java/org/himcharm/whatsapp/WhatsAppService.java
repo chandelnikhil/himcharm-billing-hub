@@ -114,7 +114,8 @@ public class WhatsAppService {
             String customerName,
             String festivalName,
             String offerPercentage,
-            LocalDate offerValidUntil
+            LocalDate offerValidUntil,
+            String imageUrl
     ) {
         String normalizedPhoneNumber = normalizePhoneNumber(customerPhoneNumber);
         List<String> bodyParameters = List.of(
@@ -128,7 +129,7 @@ public class WhatsAppService {
                 normalizedPhoneNumber,
                 festivalTemplateName,
                 invoiceTemplateLanguage,
-                festivalImageUrl,
+                imageUrl,
                 bodyParameters
         );
     }

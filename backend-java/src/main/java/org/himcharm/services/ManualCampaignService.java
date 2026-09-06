@@ -3,6 +3,7 @@ package org.himcharm.services;
 import org.himcharm.dtos.CreateManualCampaignRequest;
 import org.himcharm.entities.ManualCampaign;
 import org.himcharm.enums.WhatsAppMessageType;
+import org.himcharm.enums.CampaignImageType;
 import org.himcharm.repositories.CustomerRepository;
 import org.himcharm.repositories.ManualCampaignRepository;
 import org.himcharm.whatsapp.WhatsAppService;
@@ -20,6 +21,7 @@ public class ManualCampaignService {
     private final CampaignBatchExecutor batchExecutor;
     private final CampaignMessageSender messageSender;
     private final WhatsAppService whatsAppService;
+    private final CampaignImageService campaignImageService;
     private final Clock applicationClock;
 
     public ManualCampaignService(
@@ -28,6 +30,7 @@ public class ManualCampaignService {
             CampaignBatchExecutor batchExecutor,
             CampaignMessageSender messageSender,
             WhatsAppService whatsAppService,
+            CampaignImageService campaignImageService,
             Clock applicationClock
     ) {
         this.customerRepository = customerRepository;
@@ -35,6 +38,7 @@ public class ManualCampaignService {
         this.batchExecutor = batchExecutor;
         this.messageSender = messageSender;
         this.whatsAppService = whatsAppService;
+        this.campaignImageService = campaignImageService;
         this.applicationClock = applicationClock;
     }
 
@@ -54,10 +58,11 @@ public class ManualCampaignService {
                 campaign,
                 phoneNumber -> whatsAppService.sendManualCampaignMessage(
                         phoneNumber,
-                        festivalName,
                         customer.getName(),
+                        festivalName,
                         offerPercentage,
-                        request.validUpTo()
+                        request.validUpTo(),
+                        campaignImageService.getCampaignImageUrl(CampaignImageType.FESTIVAL)
                 )
         ));
 

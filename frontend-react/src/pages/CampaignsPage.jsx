@@ -24,6 +24,7 @@ import CakeRoundedIcon from '@mui/icons-material/CakeRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded'
 import SendRoundedIcon from '@mui/icons-material/SendRounded'
+import UploadRoundedIcon from '@mui/icons-material/UploadRounded'
 import PageHeader from '../components/common/PageHeader'
 import ModuleCard from '../components/common/ModuleCard'
 import TableState from '../components/common/TableState'
@@ -33,6 +34,11 @@ import { getApiError } from '../api/client'
 const emptyFilters = () => ({ fromDate: '', toDate: '', campaignType: '' })
 const emptyManualFilters = () => ({ fromDate: '', toDate: '', campaignId: '' })
 const emptyManualCampaign = () => ({ festivalName: '', offerPercentage: '', validUpTo: '' })
+const campaignImageTypes = [
+  { type: 'birthday', label: 'Birthday', icon: CakeRoundedIcon },
+  { type: 'anniversary', label: 'Anniversary', icon: FavoriteRoundedIcon },
+  { type: 'festival', label: 'Festival', icon: CalendarMonthRoundedIcon },
+]
 
 const formatDate = (value) => value
   ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -142,6 +148,9 @@ export default function CampaignsPage() {
   const [manualTotalMessages, setManualTotalMessages] = useState(0)
   const [manualFilters, setManualFilters] = useState(emptyManualFilters)
   const [appliedManualFilters, setAppliedManualFilters] = useState(emptyManualFilters)
+  const [uploadingImage, setUploadingImage] = useState('')
+  const [imageResult, setImageResult] = useState(null)
+  const [uploadedImageUrls, setUploadedImageUrls] = useState({})
 
   const loadMessages = useCallback(async (targetPage = page) => {
     setLoading(true)
@@ -253,9 +262,77 @@ export default function CampaignsPage() {
   const hasManualFilters = Object.values(manualFilters).some(Boolean)
     || Object.values(appliedManualFilters).some(Boolean)
 
+  const uploadCampaignImage = async (type, file) => {
+    if (!file) return
+
+    const extension = file.name.split('.').pop()?.toLowerCase()
+    if (!['png', 'jpg', 'jpeg'].includes(extension)) {
+      setImageResult({ severity: 'error', message: 'Only PNG, JPG, and JPEG images are allowed.' })
+      return
+    }
+
+    setUploadingImage(type)
+    setImageResult(null)
+    try {
+      const response = await campaignsApi.uploadImage(type, file)
+      setUploadedImageUrls((current) => ({ ...current, [type]: response.imageUrl }))
+      setImageResult({ severity: 'success', message: `${type.charAt(0).toUpperCase() + type.slice(1)} image uploaded successfully.` })
+    } catch (requestError) {
+      setImageResult({ severity: 'error', message: getApiError(requestError, 'Unable to upload campaign image') })
+    } finally {
+      setUploadingImage('')
+    }
+  }
+
   return (
     <>
       <PageHeader title="Campaigns" description="Monitor automated greetings and manage customer outreach." />
+
+      <ModuleCard sx={{ mb: 3.5 }}>
+        <Box sx={{ p: { xs: 2, sm: 2.3 } }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 800 }}>Campaign images</Typography>
+          <Typography color="text.secondary" sx={{ mt: .4, mb: 2, fontSize: 13 }}>
+            Upload the image used for each campaign. PNG, JPG, and JPEG files up to 5 MB are supported.
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2 }}>
+            {campaignImageTypes.map(({ type, label, icon: Icon }) => (
+              <Box key={type} sx={{ overflow: 'hidden', border: '1px solid', borderColor: 'divider', borderRadius: 2.5 }}>
+                <Box
+                  component="img"
+                  src={uploadedImageUrls[type] || campaignsApi.getImageUrl(type)}
+                  alt={`${label} campaign`}
+                  sx={{ display: 'block', width: '100%', height: 170, objectFit: 'cover', bgcolor: 'action.hover' }}
+                />
+                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5} sx={{ p: 1.5 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Icon color="primary" sx={{ fontSize: 20 }} />
+                    <Typography sx={{ fontSize: 13.5, fontWeight: 750 }}>{label}</Typography>
+                  </Stack>
+                  <Button
+                    component="label"
+                    size="small"
+                    variant="outlined"
+                    disabled={Boolean(uploadingImage)}
+                    startIcon={uploadingImage === type ? <CircularProgress size={15} /> : <UploadRoundedIcon />}
+                  >
+                    {uploadingImage === type ? 'Uploading…' : 'Upload'}
+                    <input
+                      hidden
+                      type="file"
+                      accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                      onChange={(event) => {
+                        uploadCampaignImage(type, event.target.files?.[0])
+                        event.target.value = ''
+                      }}
+                    />
+                  </Button>
+                </Stack>
+              </Box>
+            ))}
+          </Box>
+          {imageResult && <Alert severity={imageResult.severity} sx={{ mt: 2 }}>{imageResult.message}</Alert>}
+        </Box>
+      </ModuleCard>
 
       <CampaignBanner />
 

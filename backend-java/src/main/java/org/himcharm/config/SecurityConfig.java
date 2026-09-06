@@ -71,6 +71,9 @@ public class SecurityConfig {
                         .requestMatchers("/whatsapp/invoice/**").permitAll()
                         // Health checks must be accessible without a JWT for uptime monitors.
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
+                        // Campaign images are used by WhatsApp and must be reachable without a JWT.
+                        // Uploads remain protected because only GET requests are permitted here.
+                        .requestMatchers(HttpMethod.GET, "/images/**").permitAll()
                         // Everything else requires a valid JWT.
                         .anyRequest().authenticated()
                 )
