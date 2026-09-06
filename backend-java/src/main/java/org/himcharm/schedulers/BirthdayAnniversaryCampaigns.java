@@ -1,6 +1,5 @@
 package org.himcharm.schedulers;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.himcharm.entities.Customer;
 import org.himcharm.enums.WhatsAppMessageType;
@@ -151,11 +150,5 @@ public class BirthdayAnniversaryCampaigns {
             String templateName,
             String imageUrl
     ) {
-    }
-
-
-    @PostConstruct
-    public void send() {
-        sendBirthdayCampaign();
     }
 }
