@@ -1,11 +1,10 @@
 import axios from 'axios'
 
 const TOKEN_KEY = 'himcharm_access_token'
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 const defaultHeaders = { 'Content-Type': 'application/json' }
 
 const apiClient = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: '/api',
   headers: defaultHeaders,
 })
 
