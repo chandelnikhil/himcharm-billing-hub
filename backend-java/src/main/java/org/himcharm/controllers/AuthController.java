@@ -2,6 +2,7 @@ package org.himcharm.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +27,6 @@ import java.util.Map;
 @RequestMapping("/auth")
 @AllArgsConstructor
 public class AuthController {
-
     private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
