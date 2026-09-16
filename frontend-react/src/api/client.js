@@ -1,12 +1,8 @@
 import axios from 'axios'
 
 const TOKEN_KEY = 'himcharm_access_token'
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://banker-bannister-darkroom.ngrok-free.dev/himcharm';
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 const defaultHeaders = { 'Content-Type': 'application/json' }
-
-if (apiBaseUrl.includes('.ngrok-free.')) {
-  defaultHeaders['ngrok-skip-browser-warning'] = 'true'
-}
 
 const apiClient = axios.create({
   baseURL: apiBaseUrl,
