@@ -59,11 +59,11 @@ public class DashboardServiceImpl implements DashboardService {
             storeService.getStoreById(storeId);
         }
 
-        List<Invoice> invoices = invoiceRepository.findAllForDashboard(
-                startDate.atStartOfDay(),
-                endDate.plusDays(1).atStartOfDay(),
-                storeId
-        );
+        LocalDateTime fromDateTime = startDate.atStartOfDay();
+        LocalDateTime toDateExclusive = endDate.plusDays(1).atStartOfDay();
+        List<Invoice> invoices = storeId == null
+                ? invoiceRepository.findAllForDashboardAcrossStores(fromDateTime, toDateExclusive)
+                : invoiceRepository.findAllForDashboardByStore(fromDateTime, toDateExclusive, storeId);
         // Find the first-ever invoice for every customer present in the selected range.
         // "New" means the customer's first invoice across all time, not simply their
         // first invoice inside the selected dashboard date range.

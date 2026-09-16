@@ -26,6 +26,7 @@ import org.himcharm.whatsapp.dto.WhatsAppMessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -159,7 +160,20 @@ public class InvoiceServiceImpl implements InvoiceService {
                 PAGE_SIZE,
                 Sort.by(Sort.Direction.DESC, "invoiceDate")
         );
-        return invoiceRepository.findAllByInvoiceDateRange(fromDateTime, toDateExclusive, storeId, pageable);
+        Specification<Invoice> filters = (root, query, builder) -> builder.conjunction();
+        if (fromDateTime != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("invoiceDate"), fromDateTime));
+        }
+        if (toDateExclusive != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.lessThan(root.get("invoiceDate"), toDateExclusive));
+        }
+        if (storeId != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("store").get("id"), storeId));
+        }
+        return invoiceRepository.findAll(filters, pageable);
     }
 
     @Override

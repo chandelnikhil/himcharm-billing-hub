@@ -102,4 +102,8 @@ INSERT INTO invoices (id, created_at, invoice_date, invoice_number, payment_mode
 INSERT INTO invoices (id, created_at, invoice_date, invoice_number, payment_mode, subtotal, total_amount, updated_at, whatsapp_status, customer_id, store_id) VALUES (100, '2026-08-28 10:24:57.051000', '2026-08-28 10:24:57.051000', 'INV-ST-4-280826-100', 'DEBIT', 4426, 3762.1, '2026-08-28 10:25:26.051000', 'DELIVERED', 1, 4);
 INSERT INTO invoices (id, created_at, invoice_date, invoice_number, payment_mode, subtotal, total_amount, updated_at, whatsapp_status, customer_id, store_id) VALUES (101, '2026-08-29 08:28:16.000000', '2026-08-29 08:28:16.000000', 'INV-ST-5-290826-101', 'UPI', 4563, 3650.4, '2026-08-29 08:28:46.000000', 'NOT_SENT', 1, 5);
 
-ALTER TABLE invoices AUTO_INCREMENT = 102;
+SELECT setval(
+    pg_get_serial_sequence('invoices', 'id'),
+    GREATEST((SELECT MAX(id) FROM invoices), 1),
+    true
+);

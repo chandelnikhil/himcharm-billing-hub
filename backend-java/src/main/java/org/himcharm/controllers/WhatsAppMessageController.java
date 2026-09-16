@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -57,13 +58,23 @@ public class WhatsAppMessageController {
                 PAGE_SIZE,
                 newestFirst()
         );
-        Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findAutomatedCampaignMessages(
-                java.util.List.of(WhatsAppMessageType.BIRTHDAY, WhatsAppMessageType.ANNIVERSARY),
-                request.getCampaignType(),
-                request.getFromDate() == null ? null : request.getFromDate().atStartOfDay(),
-                request.getToDate() == null ? null : request.getToDate().plusDays(1).atStartOfDay(),
-                pageable
-        );
+        Specification<WhatsAppMessage> filters = (root, query, builder) ->
+                root.get("messageType").in(WhatsAppMessageType.BIRTHDAY, WhatsAppMessageType.ANNIVERSARY);
+        if (request.getCampaignType() != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("messageType"), request.getCampaignType()));
+        }
+        if (request.getFromDate() != null) {
+            var fromDateTime = request.getFromDate().atStartOfDay();
+            filters = filters.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("createdAt"), fromDateTime));
+        }
+        if (request.getToDate() != null) {
+            var toDateTime = request.getToDate().plusDays(1).atStartOfDay();
+            filters = filters.and((root, query, builder) ->
+                    builder.lessThan(root.get("createdAt"), toDateTime));
+        }
+        Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findAll(filters, pageable);
         PageResponseDTO<AutomatedCampaignMessageResponseDTO> messages = PageResponseDTO
                 .<AutomatedCampaignMessageResponseDTO>builder()
                 .content(messagePage.getContent().stream().map(this::toAutomatedCampaignResponse).toList())
@@ -92,13 +103,23 @@ public class WhatsAppMessageController {
                 PAGE_SIZE,
                 newestFirst()
         );
-        Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findManualCampaignMessages(
-                WhatsAppMessageType.MANUAL_CAMAPIGN,
-                request.getCampaignId(),
-                request.getFromDate() == null ? null : request.getFromDate().atStartOfDay(),
-                request.getToDate() == null ? null : request.getToDate().plusDays(1).atStartOfDay(),
-                pageable
-        );
+        Specification<WhatsAppMessage> filters = (root, query, builder) ->
+                builder.equal(root.get("messageType"), WhatsAppMessageType.MANUAL_CAMAPIGN);
+        if (request.getCampaignId() != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.equal(root.get("manualCampaign").get("id"), request.getCampaignId()));
+        }
+        if (request.getFromDate() != null) {
+            var fromDateTime = request.getFromDate().atStartOfDay();
+            filters = filters.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("createdAt"), fromDateTime));
+        }
+        if (request.getToDate() != null) {
+            var toDateTime = request.getToDate().plusDays(1).atStartOfDay();
+            filters = filters.and((root, query, builder) ->
+                    builder.lessThan(root.get("createdAt"), toDateTime));
+        }
+        Page<WhatsAppMessage> messagePage = whatsAppMessageRepository.findAll(filters, pageable);
         PageResponseDTO<ManualCampaignMessageResponseDTO> messages = PageResponseDTO
                 .<ManualCampaignMessageResponseDTO>builder()
                 .content(messagePage.getContent().stream().map(this::toManualCampaignResponse).toList())

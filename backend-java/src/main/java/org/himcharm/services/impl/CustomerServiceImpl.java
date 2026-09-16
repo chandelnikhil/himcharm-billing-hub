@@ -8,6 +8,7 @@ import org.himcharm.services.CustomerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,7 +63,20 @@ public class CustomerServiceImpl implements CustomerService {
         LocalDateTime toDateExclusive = toDate == null ? null : toDate.plusDays(1).atStartOfDay();
         String phoneFilter = phone == null || phone.isBlank() ? null : phone.trim();
         PageRequest pageable = PageRequest.of(page, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return customerRepository.findAllByFilters(fromDateTime, toDateExclusive, phoneFilter, pageable);
+        Specification<Customer> filters = (root, query, builder) -> builder.conjunction();
+        if (fromDateTime != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.greaterThanOrEqualTo(root.get("createdAt"), fromDateTime));
+        }
+        if (toDateExclusive != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.lessThan(root.get("createdAt"), toDateExclusive));
+        }
+        if (phoneFilter != null) {
+            filters = filters.and((root, query, builder) ->
+                    builder.like(root.get("phone"), "%" + phoneFilter + "%"));
+        }
+        return customerRepository.findAll(filters, pageable);
     }
 
     @Override

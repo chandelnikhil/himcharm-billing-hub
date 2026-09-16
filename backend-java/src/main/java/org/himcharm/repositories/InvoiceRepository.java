@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
+public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
 
     @EntityGraph(attributePaths = {"store", "customer", "items", "items.product"})
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
@@ -24,18 +26,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     @EntityGraph(attributePaths = {"store", "customer", "items", "items.product"})
     Optional<Invoice> findById(Long id);
 
+    @Override
     @EntityGraph(attributePaths = {"store", "customer"})
-    @Query("""
-            SELECT invoice
-            FROM Invoice invoice
-            WHERE (:fromDate IS NULL OR invoice.invoiceDate >= :fromDate)
-              AND (:toDateExclusive IS NULL OR invoice.invoiceDate < :toDateExclusive)
-              AND (:storeId IS NULL OR invoice.store.id = :storeId)
-            """)
-    Page<Invoice> findAllByInvoiceDateRange(
-            @Param("fromDate") LocalDateTime fromDate,
-            @Param("toDateExclusive") LocalDateTime toDateExclusive,
-            @Param("storeId") Long storeId,
+    Page<Invoice> findAll(
+            Specification<Invoice> specification,
             Pageable pageable
     );
 
@@ -45,10 +39,23 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
             JOIN FETCH invoice.customer customer
             WHERE invoice.invoiceDate >= :fromDate
               AND invoice.invoiceDate < :toDateExclusive
-              AND (:storeId IS NULL OR invoice.store.id = :storeId)
             ORDER BY invoice.invoiceDate ASC
             """)
-    List<Invoice> findAllForDashboard(
+    List<Invoice> findAllForDashboardAcrossStores(
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDateExclusive") LocalDateTime toDateExclusive
+    );
+
+    @Query("""
+            SELECT invoice
+            FROM Invoice invoice
+            JOIN FETCH invoice.customer customer
+            WHERE invoice.invoiceDate >= :fromDate
+              AND invoice.invoiceDate < :toDateExclusive
+              AND invoice.store.id = :storeId
+            ORDER BY invoice.invoiceDate ASC
+            """)
+    List<Invoice> findAllForDashboardByStore(
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDateExclusive") LocalDateTime toDateExclusive,
             @Param("storeId") Long storeId
