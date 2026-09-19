@@ -9,7 +9,7 @@ public interface CustomerService {
 
     Customer createCustomer(Customer customer);
 
-    Customer getOrCreateCustomerByPhone(String phone, String name);
+    Customer getOrCreateCustomerByPhone(String phone, String name, LocalDate dateOfBirth);
 
     Page<Customer> getCustomers(int page, LocalDate fromDate, LocalDate toDate, String phone);
 

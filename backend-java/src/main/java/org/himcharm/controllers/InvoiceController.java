@@ -81,6 +81,7 @@ public class InvoiceController {
                 .customer(Customer.builder()
                         .phone(request.getCustomerPhoneNumber())
                         .name(request.getCustomerName())
+                        .dateOfBirth(request.getCustomerDateOfBirth())
                         .build())
                 .paymentMode(request.getPaymentMode())
                 .build();

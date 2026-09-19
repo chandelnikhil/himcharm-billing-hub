@@ -40,11 +40,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional
-    public Customer getOrCreateCustomerByPhone(String phone, String name) {
+    public Customer getOrCreateCustomerByPhone(String phone, String name, LocalDate dateOfBirth) {
         Customer customer = customerRepository.findByPhone(phone)
                 .orElseGet(() -> Customer.builder().phone(phone).name(name).build());
         if ((customer.getName() == null || customer.getName().isBlank()) && name != null && !name.isBlank()) {
             customer.setName(name);
+        }
+        if (dateOfBirth != null) {
+            customer.setDateOfBirth(dateOfBirth);
         }
         return customerRepository.save(customer);
     }

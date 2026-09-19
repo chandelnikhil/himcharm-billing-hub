@@ -22,7 +22,6 @@ import {
   DescriptionOutlined,
   Facebook,
   Instagram,
-  LinkedIn,
   LocalPhoneOutlined,
   PersonOutlineOutlined,
   RateReviewOutlined,

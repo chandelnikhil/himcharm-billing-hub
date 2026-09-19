@@ -37,7 +37,7 @@ import { invoicesApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
 const blankItem = () => ({ itemName: '', quantity: 1, unitPrice: '', discountPercentage: 0 })
-const initialForm = () => ({ storeId: '', customerPhoneNumber: '', customerName: '', paymentMode: 'UPI', items: [blankItem()] })
+const initialForm = () => ({ storeId: '', customerPhoneNumber: '', customerName: '', customerDateOfBirth: '', paymentMode: 'UPI', items: [blankItem()] })
 const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 })
 const formatDate = (value) => value ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '—'
 
@@ -177,11 +177,12 @@ export default function InvoicesPage() {
         <DialogContent dividers sx={{ pt: 2.5 }}>
           {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
           {!stores.length && !loading && <Alert severity="info" sx={{ mb: 2 }}>Create an active store before creating an invoice.</Alert>}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1.1fr 1fr 1fr 1fr' }, gap: 2 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1.1fr 1fr 1fr 1fr 1fr' }, gap: 2 }}>
             <TextField select required label="Store" value={form.storeId} onChange={(event) => setForm((current) => ({ ...current, storeId: event.target.value }))}>{stores.filter((store) => store.active).map((store) => <MenuItem key={store.id} value={store.id}>{store.name} ({store.storeCode})</MenuItem>)}</TextField>
             <TextField required label="Customer phone" value={form.customerPhoneNumber} onChange={(event) => setForm((current) => ({ ...current, customerPhoneNumber: event.target.value }))} inputProps={{ maxLength: 20 }} />
             <TextField label="Customer name" value={form.customerName} onChange={(event) => setForm((current) => ({ ...current, customerName: event.target.value }))} inputProps={{ maxLength: 150 }} />
-            <TextField select label="Payment mode" value={form.paymentMode} onChange={(event) => setForm((current) => ({ ...current, paymentMode: event.target.value }))}>{['UPI', 'CREDIT', 'DEBIT'].map((mode) => <MenuItem key={mode} value={mode}>{mode}</MenuItem>)}</TextField>
+            <TextField required type="date" label="Customer DOB" value={form.customerDateOfBirth} onChange={(event) => setForm((current) => ({ ...current, customerDateOfBirth: event.target.value }))} slotProps={{ inputLabel: { shrink: true }, htmlInput: { max: new Date().toISOString().slice(0, 10) } }} />
+            <TextField select required label="Payment mode" value={form.paymentMode} onChange={(event) => setForm((current) => ({ ...current, paymentMode: event.target.value }))}>{['UPI', 'CASH', 'CREDIT', 'DEBIT'].map((mode) => <MenuItem key={mode} value={mode}>{mode}</MenuItem>)}</TextField>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 3.5, mb: 1.5 }}><Typography variant="h6">Invoice items</Typography><Button type="button" size="small" startIcon={<AddRoundedIcon />} onClick={() => setForm((current) => ({ ...current, items: [...current.items, blankItem()] }))}>Add item</Button></Box>
           <Box sx={{ display: 'grid', gap: 1.3 }}>

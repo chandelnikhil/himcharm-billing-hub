@@ -60,7 +60,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         Store store = storeService.getStoreById(invoice.getStore().getId());
         Customer customer = customerService.getOrCreateCustomerByPhone(
                 invoice.getCustomer().getPhone(),
-                invoice.getCustomer().getName()
+                invoice.getCustomer().getName(),
+                invoice.getCustomer().getDateOfBirth()
         );
         invoice.setStore(store);
         invoice.setCustomer(customer);

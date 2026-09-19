@@ -361,7 +361,7 @@ export default function CampaignsPage() {
         </Box>
 
         <TableContainer>
-          <Table sx={{ minWidth: 1680 }}>
+          <Table sx={{ minWidth: 1470 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Customer</TableCell>
@@ -370,7 +370,6 @@ export default function CampaignsPage() {
                 <TableCell>Anniversary</TableCell>
                 <TableCell>Message type</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Failure reason</TableCell>
                 <TableCell>Failed at</TableCell>
                 <TableCell>Sent at</TableCell>
                 <TableCell>Delivered at</TableCell>
@@ -379,7 +378,7 @@ export default function CampaignsPage() {
             </TableHead>
             <TableBody>
               {(loading || error || !messages.length) ? (
-                <TableState columns={11} loading={loading} error={error} emptyMessage="No automated messages match the selected filters." onRetry={() => loadMessages()} />
+                <TableState columns={10} loading={loading} error={error} emptyMessage="No automated messages match the selected filters." onRetry={() => loadMessages()} />
               ) : messages.map((message) => (
                 <TableRow key={message.id} hover>
                   <TableCell><Typography sx={{ fontSize: 13.5, fontWeight: 750 }}>{message.customerName || '—'}</Typography></TableCell>
@@ -390,7 +389,6 @@ export default function CampaignsPage() {
                     <Chip size="small" icon={message.messageType === 'BIRTHDAY' ? <CakeRoundedIcon /> : <FavoriteRoundedIcon />} label={message.messageType} variant="outlined" sx={{ fontSize: 11.5, fontWeight: 700, '& .MuiChip-icon': { fontSize: 15 } }} />
                   </TableCell>
                   <TableCell><MessageStatus value={message.messageStatus} /></TableCell>
-                  <TableCell sx={{ minWidth: 210, maxWidth: 300 }}><Typography title={message.failureReason || ''} noWrap sx={{ fontSize: 13, color: message.failureReason ? 'error.main' : 'text.secondary' }}>{message.failureReason || '—'}</Typography></TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.failedAt)}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.sentAt)}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.deliveredAt)}</TableCell>
@@ -445,7 +443,7 @@ export default function CampaignsPage() {
         </Box>
 
         <TableContainer>
-          <Table sx={{ minWidth: 1320 }}>
+          <Table sx={{ minWidth: 1110 }}>
             <TableHead>
               <TableRow>
                 <TableCell>Campaign ID</TableCell>
@@ -453,7 +451,6 @@ export default function CampaignsPage() {
                 <TableCell>Phone number</TableCell>
                 <TableCell>Message type</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Failure reason</TableCell>
                 <TableCell>Failed at</TableCell>
                 <TableCell>Sent at</TableCell>
                 <TableCell>Created at</TableCell>
@@ -461,7 +458,7 @@ export default function CampaignsPage() {
             </TableHead>
             <TableBody>
               {(manualLoading || manualError || !manualMessages.length) ? (
-                <TableState columns={9} loading={manualLoading} error={manualError} emptyMessage="No manual campaign messages match the selected filters." onRetry={() => loadManualMessages()} />
+                <TableState columns={8} loading={manualLoading} error={manualError} emptyMessage="No manual campaign messages match the selected filters." onRetry={() => loadManualMessages()} />
               ) : manualMessages.map((message) => (
                 <TableRow key={message.id} hover>
                   <TableCell><Typography sx={{ color: 'secondary.main', fontSize: 13.5, fontWeight: 800 }}>#{message.campaignId}</Typography></TableCell>
@@ -469,7 +466,6 @@ export default function CampaignsPage() {
                   <TableCell sx={{ fontWeight: 650, whiteSpace: 'nowrap' }}>{message.customerPhoneNumber || '—'}</TableCell>
                   <TableCell><Chip size="small" icon={<SendRoundedIcon />} label={message.messageType} variant="outlined" sx={{ fontSize: 11.5, fontWeight: 700, '& .MuiChip-icon': { fontSize: 15 } }} /></TableCell>
                   <TableCell><MessageStatus value={message.messageStatus} /></TableCell>
-                  <TableCell sx={{ minWidth: 210, maxWidth: 300 }}><Typography title={message.failureReason || ''} noWrap sx={{ fontSize: 13, color: message.failureReason ? 'error.main' : 'text.secondary' }}>{message.failureReason || '—'}</Typography></TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.failedAt)}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.sentAt)}</TableCell>
                   <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDateTime(message.createdAt)}</TableCell>
