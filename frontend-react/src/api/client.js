@@ -4,7 +4,7 @@ const TOKEN_KEY = 'himcharm_access_token'
 const defaultHeaders = { 'Content-Type': 'application/json' }
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:9090/himcharm/',
+  baseURL: '/api',
   headers: defaultHeaders,
 })
 
