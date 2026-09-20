@@ -15,12 +15,14 @@ import org.himcharm.entities.Customer;
 import org.himcharm.entities.Feedback;
 import org.himcharm.entities.Invoice;
 import org.himcharm.repositories.FeedbackRepository;
+import org.himcharm.repositories.InvoiceRepository;
 import org.himcharm.services.CustomerService;
 import org.himcharm.services.InvoiceService;
 import org.himcharm.utilies.Base64UrlCodec;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +41,7 @@ public class WhatsAppInvoiceController {
     private final InvoiceService invoiceService;
     private final CustomerService customerService;
     private final FeedbackRepository feedbackRepository;
+    private final InvoiceRepository invoiceRepository;
     private final ModelMapper modelMapper;
 
     @GetMapping
@@ -74,21 +77,27 @@ public class WhatsAppInvoiceController {
     }
 
     @PostMapping("/feedback")
+    @Transactional
     public ResponseEntity<ApiResponse> saveFeedback(
             @RequestParam String invoiceNumber,
             @Valid @RequestBody FeedbackRequestDTO request
     ) {
+        Invoice invoice = getInvoice(invoiceNumber);
+        if (invoice.getFeedback() != null) {
+            throw new IllegalStateException("Feedback has already been submitted for this invoice");
+        }
         if (request.rating() < 4 && (request.feedback() == null || request.feedback().isBlank())) {
             throw new IllegalStateException("Feedback is required for ratings below 4");
         }
 
-        Invoice invoice = getInvoice(invoiceNumber);
         Feedback savedFeedback = feedbackRepository.save(Feedback.builder()
                 .rating(request.rating())
                 .feedback(normalizeFeedback(request.feedback()))
                 .customer(invoice.getCustomer())
                 .store(invoice.getStore())
                 .build());
+        invoice.setFeedback(savedFeedback);
+        invoiceRepository.save(invoice);
 
         FeedbackResponseDTO response = new FeedbackResponseDTO(
                 savedFeedback.getId(),
@@ -122,6 +131,7 @@ public class WhatsAppInvoiceController {
                 invoice.getStore().getGoogleReviewUrl(),
                 invoice.getCustomer().getPhone(),
                 invoice.getCustomer().getId(),
+                invoice.getFeedback() != null,
                 toInvoiceResponse(invoice),
                 modelMapper.map(invoice.getStore(), StoreResponseDTO.class),
                 modelMapper.map(invoice.getCustomer(), CustomerResponseDTO.class)

@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.himcharm.enums.PaymentMode;
 import org.himcharm.enums.WhatsAppStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +23,9 @@ public class InvoiceResponseDTO {
     private String invoiceNumber;
     private Long storeId;
     private Long customerId;
+    private String customerPhoneNumber;
+    private String customerName;
+    private LocalDate customerDateOfBirth;
     private LocalDateTime invoiceDate;
     private Double subtotal;
     private Double totalAmount;

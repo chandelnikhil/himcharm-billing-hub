@@ -19,7 +19,7 @@ import java.util.Optional;
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpecificationExecutor<Invoice> {
 
-    @EntityGraph(attributePaths = {"store", "customer", "items", "items.product"})
+    @EntityGraph(attributePaths = {"store", "customer", "feedback", "items", "items.product"})
     Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
 
     @Override

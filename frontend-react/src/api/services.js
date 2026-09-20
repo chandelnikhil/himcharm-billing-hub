@@ -29,6 +29,7 @@ export const invoicesApi = {
   list: (params = {}) => apiClient.get('/invoices', { params }).then(unwrap),
   get: (id) => apiClient.get(`/invoices/${id}`).then(unwrap),
   create: (invoice) => apiClient.post('/invoices', invoice).then(unwrap),
+  update: (id, invoice) => apiClient.put(`/invoices/${id}`, invoice).then(unwrap),
 }
 
 export const dashboardApi = {

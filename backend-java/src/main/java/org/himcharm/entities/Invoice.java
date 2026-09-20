@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -68,6 +69,10 @@ public class Invoice {
     @Enumerated(EnumType.STRING)
     @Column(name = "whatsapp_status", nullable = false, length = 30)
     private WhatsAppStatus whatsappStatus;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feedback_id", unique = true)
+    private Feedback feedback;
 
     @Builder.Default
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

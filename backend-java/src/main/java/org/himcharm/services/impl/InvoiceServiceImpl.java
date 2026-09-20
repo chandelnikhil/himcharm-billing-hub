@@ -145,6 +145,59 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    @Transactional
+    public Invoice updateInvoice(Long id, Invoice updatedInvoice) {
+        Invoice invoice = invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
+        Store store = storeService.getStoreById(updatedInvoice.getStore().getId());
+        Customer customer = customerService.getOrCreateCustomerByPhone(
+                updatedInvoice.getCustomer().getPhone(),
+                updatedInvoice.getCustomer().getName(),
+                updatedInvoice.getCustomer().getDateOfBirth()
+        );
+        customer.setName(updatedInvoice.getCustomer().getName());
+
+        invoice.setStore(store);
+        invoice.setCustomer(customer);
+        invoice.setPaymentMode(updatedInvoice.getPaymentMode());
+        invoice.getItems().clear();
+        for (InvoiceItem item : updatedInvoice.getItems()) {
+            invoice.addItem(item);
+        }
+
+        Map<Long, Product> productsById = getProductsByIds(invoice);
+        double subtotal = ZERO;
+        double totalAfterItemDiscounts = ZERO;
+        for (InvoiceItem item : invoice.getItems()) {
+            Product product = resolveProduct(item.getProduct(), productsById);
+            String itemName = resolveItemName(item, product);
+            double unitPrice = money(item.getUnitPrice());
+            double discountPercentage = money(item.getDiscountPercentage());
+            double grossAmount = money(unitPrice * item.getQuantity());
+            if (discountPercentage < 0.0 || discountPercentage > 100.0) {
+                throw new IllegalStateException("Item discount percentage must be between 0 and 100: " + itemName);
+            }
+
+            double discountValue = grossAmount * discountPercentage / 100.0;
+            item.setProduct(product);
+            item.setItemName(itemName);
+            item.setUnitPrice(unitPrice);
+            item.setDiscountPercentage(discountPercentage);
+            item.setLineTotal(money(grossAmount - discountValue));
+            subtotal += grossAmount;
+            totalAfterItemDiscounts += item.getLineTotal();
+        }
+        invoice.setSubtotal(money(subtotal));
+        invoice.setTotalAmount(money(totalAfterItemDiscounts));
+
+        if (invoice.getFeedback() != null) {
+            invoice.getFeedback().setCustomer(customer);
+            invoice.getFeedback().setStore(store);
+        }
+        return invoiceRepository.save(invoice);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<Invoice> getInvoices(int page, LocalDate fromDate, LocalDate toDate, Long storeId) {
         if (page < 0) {

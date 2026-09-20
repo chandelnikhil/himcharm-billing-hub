@@ -9,6 +9,8 @@ public interface InvoiceService {
 
     Invoice createInvoice(Invoice invoice);
 
+    Invoice updateInvoice(Long id, Invoice invoice);
+
     Page<Invoice> getInvoices(int page, LocalDate fromDate, LocalDate toDate, Long storeId);
 
     Invoice getInvoiceById(Long id);

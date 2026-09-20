@@ -262,7 +262,7 @@ export default function PublicInvoicePage() {
     publicInvoiceApi.getReviewDetails(invoiceNumber, controller.signal)
       .then((data) => {
         setDetails(data)
-        setFeedbackOpen(true)
+        setFeedbackOpen(!data.feedbackSubmitted)
         const customer = data.customerProfile || {}
         setProfile({
           ...emptyProfile,
@@ -340,6 +340,7 @@ export default function PublicInvoicePage() {
         rating,
         feedback: rating < 4 ? feedback.trim() : null,
       })
+      setDetails((current) => current ? { ...current, feedbackSubmitted: true } : current)
       setFeedbackOpen(false)
       setNotice({ severity: 'success', message: 'Thank you. Your feedback has been saved.' })
       if (googleReviewTab) {
@@ -363,15 +364,17 @@ export default function PublicInvoicePage() {
         ) : (
           <>
             {displayError && <Alert severity="error" className="public-error">{displayError}</Alert>}
-            <Button
-              className="google-review-button"
-              variant="contained"
-              startIcon={<RateReviewOutlined />}
-              disabled={!details?.googleReviewUrl}
-              onClick={() => setFeedbackOpen(true)}
-            >
-              Rate us on Google
-            </Button>
+            {!details?.feedbackSubmitted && (
+              <Button
+                className="google-review-button"
+                variant="contained"
+                startIcon={<RateReviewOutlined />}
+                disabled={!details?.googleReviewUrl}
+                onClick={() => setFeedbackOpen(true)}
+              >
+                Rate us on Google
+              </Button>
+            )}
 
             {activeTab === 'invoice' ? (
               <InvoiceView invoice={details?.invoice} store={details?.store} customer={details?.customerProfile} />
