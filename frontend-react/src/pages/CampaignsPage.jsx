@@ -28,12 +28,13 @@ import UploadRoundedIcon from '@mui/icons-material/UploadRounded'
 import PageHeader from '../components/common/PageHeader'
 import ModuleCard from '../components/common/ModuleCard'
 import TableState from '../components/common/TableState'
-import { campaignsApi } from '../api/services'
+import { campaignsApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
 const emptyFilters = () => ({ fromDate: '', toDate: '', campaignType: '' })
 const emptyManualFilters = () => ({ fromDate: '', toDate: '', campaignId: '' })
-const emptyManualCampaign = () => ({ festivalName: '', offerPercentage: '', validUpTo: '' })
+const ALL_STORES = 'all'
+const emptyManualCampaign = () => ({ festivalName: '', offerPercentage: '', validUpTo: '', storeId: ALL_STORES })
 const campaignImageTypes = [
   { type: 'birthday', label: 'Birthday', icon: CakeRoundedIcon },
   { type: 'anniversary', label: 'Anniversary', icon: FavoriteRoundedIcon },
@@ -151,6 +152,7 @@ export default function CampaignsPage() {
   const [uploadingImage, setUploadingImage] = useState('')
   const [imageResult, setImageResult] = useState(null)
   const [uploadedImageUrls, setUploadedImageUrls] = useState({})
+  const [stores, setStores] = useState([])
 
   const loadMessages = useCallback(async (targetPage = page) => {
     setLoading(true)
@@ -198,6 +200,10 @@ export default function CampaignsPage() {
     return () => window.clearTimeout(task)
   }, [loadManualMessages])
 
+  useEffect(() => {
+    storesApi.list().then((result) => setStores(result || [])).catch(() => setStores([]))
+  }, [])
+
   const applyFilters = () => {
     if (filters.fromDate && filters.toDate && filters.fromDate > filters.toDate) {
       setError('Start date cannot be after end date')
@@ -228,6 +234,7 @@ export default function CampaignsPage() {
         ...manualCampaign,
         festivalName: manualCampaign.festivalName.trim(),
         offerPercentage: Number(manualCampaign.offerPercentage),
+        storeId: manualCampaign.storeId === ALL_STORES ? null : Number(manualCampaign.storeId),
       })
       const campaignId = response?.campaignId
       setCampaignResult({ severity: 'success', message: `Campaign #${campaignId} started successfully.` })
@@ -415,6 +422,12 @@ export default function CampaignsPage() {
             </FilterField>
             <FilterField label="Valid up to">
               <TextField fullWidth type="date" value={manualCampaign.validUpTo} onChange={(event) => setManualCampaign((current) => ({ ...current, validUpTo: event.target.value }))} inputProps={{ min: new Date().toISOString().slice(0, 10) }} />
+            </FilterField>
+            <FilterField label="Customers from">
+              <TextField select fullWidth value={manualCampaign.storeId} onChange={(event) => setManualCampaign((current) => ({ ...current, storeId: event.target.value }))}>
+                <MenuItem value={ALL_STORES}>All stores</MenuItem>
+                {stores.filter((store) => store.active).map((store) => <MenuItem key={store.id} value={String(store.id)}>{store.name}</MenuItem>)}
+              </TextField>
             </FilterField>
             <Button variant="contained" color="secondary" disabled={startingCampaign} onClick={startManualCampaign} startIcon={startingCampaign ? <CircularProgress size={16} color="inherit" /> : <SendRoundedIcon />}>
               {startingCampaign ? 'Starting…' : 'Run campaign'}

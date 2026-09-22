@@ -65,6 +65,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         );
         invoice.setStore(store);
         invoice.setCustomer(customer);
+        customer.addStore(store);
         invoice.setInvoiceDate(invoice.getInvoiceDate() == null ? LocalDateTime.now() : invoice.getInvoiceDate());
         invoice.setWhatsappStatus(WhatsAppStatus.NOT_SENT);
         invoice.setSubtotal(ZERO);
@@ -156,6 +157,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                 updatedInvoice.getCustomer().getDateOfBirth()
         );
         customer.setName(updatedInvoice.getCustomer().getName());
+        customer.addStore(store);
 
         invoice.setStore(store);
         invoice.setCustomer(customer);

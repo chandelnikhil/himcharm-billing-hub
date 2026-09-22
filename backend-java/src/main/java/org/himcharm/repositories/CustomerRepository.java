@@ -22,6 +22,8 @@ public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSp
 
     Optional<Customer> findByPhone(String phone);
 
+    List<Customer> findDistinctByStores_Id(Long storeId);
+
     boolean existsByPhoneAndIdNot(String phone, Long id);
 
     @Query("""

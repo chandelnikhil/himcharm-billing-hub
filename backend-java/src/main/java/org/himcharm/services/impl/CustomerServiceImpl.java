@@ -54,7 +54,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Customer> getCustomers(int page, LocalDate fromDate, LocalDate toDate, String phone) {
+    public Page<Customer> getCustomers(int page, LocalDate fromDate, LocalDate toDate, String phone, Long storeId) {
         if (page < 0) {
             throw new IllegalStateException("Page number cannot be negative");
         }
@@ -78,6 +78,12 @@ public class CustomerServiceImpl implements CustomerService {
         if (phoneFilter != null) {
             filters = filters.and((root, query, builder) ->
                     builder.like(root.get("phone"), "%" + phoneFilter + "%"));
+        }
+        if (storeId != null) {
+            filters = filters.and((root, query, builder) -> {
+                query.distinct(true);
+                return builder.equal(root.join("stores").get("id"), storeId);
+            });
         }
         return customerRepository.findAll(filters, pageable);
     }

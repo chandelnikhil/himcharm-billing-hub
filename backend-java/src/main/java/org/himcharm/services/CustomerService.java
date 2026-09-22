@@ -11,7 +11,7 @@ public interface CustomerService {
 
     Customer getOrCreateCustomerByPhone(String phone, String name, LocalDate dateOfBirth);
 
-    Page<Customer> getCustomers(int page, LocalDate fromDate, LocalDate toDate, String phone);
+    Page<Customer> getCustomers(int page, LocalDate fromDate, LocalDate toDate, String phone, Long storeId);
 
     Customer getCustomerById(Long id);
 

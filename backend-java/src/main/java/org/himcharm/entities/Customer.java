@@ -7,6 +7,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -20,6 +23,8 @@ import org.himcharm.enums.Gender;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -63,6 +68,15 @@ public class Customer {
     @Column(name = "spouse_date_of_birth")
     private LocalDate spouseDateOfBirth;
 
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(
+            name = "customer_stores",
+            joinColumns = @JoinColumn(name = "customer_id"),
+            inverseJoinColumns = @JoinColumn(name = "store_id")
+    )
+    private Set<Store> stores = new HashSet<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -79,5 +93,9 @@ public class Customer {
     @PreUpdate
     void beforeUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void addStore(Store store) {
+        stores.add(store);
     }
 }

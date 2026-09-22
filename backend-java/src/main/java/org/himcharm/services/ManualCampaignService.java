@@ -1,6 +1,7 @@
 package org.himcharm.services;
 
 import org.himcharm.dtos.CreateManualCampaignRequest;
+import org.himcharm.entities.Customer;
 import org.himcharm.entities.ManualCampaign;
 import org.himcharm.enums.WhatsAppMessageType;
 import org.himcharm.enums.CampaignImageType;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ManualCampaignService {
@@ -22,6 +24,7 @@ public class ManualCampaignService {
     private final CampaignMessageSender messageSender;
     private final WhatsAppService whatsAppService;
     private final CampaignImageService campaignImageService;
+    private final StoreService storeService;
     private final Clock applicationClock;
 
     public ManualCampaignService(
@@ -31,6 +34,7 @@ public class ManualCampaignService {
             CampaignMessageSender messageSender,
             WhatsAppService whatsAppService,
             CampaignImageService campaignImageService,
+            StoreService storeService,
             Clock applicationClock
     ) {
         this.customerRepository = customerRepository;
@@ -39,10 +43,19 @@ public class ManualCampaignService {
         this.messageSender = messageSender;
         this.whatsAppService = whatsAppService;
         this.campaignImageService = campaignImageService;
+        this.storeService = storeService;
         this.applicationClock = applicationClock;
     }
 
     public Long start(CreateManualCampaignRequest request) {
+        List<Customer> customers;
+        if (request.storeId() == null) {
+            customers = customerRepository.findAll();
+        } else {
+            storeService.getStoreById(request.storeId());
+            customers = customerRepository.findDistinctByStores_Id(request.storeId());
+        }
+
         ManualCampaign campaign = campaignRepository.save(ManualCampaign.builder()
                 .type(WhatsAppMessageType.MANUAL_CAMAPIGN)
                 .startDate(LocalDate.now(applicationClock))
@@ -51,7 +64,7 @@ public class ManualCampaignService {
 
         String festivalName = request.festivalName().trim();
         String offerPercentage = formatPercentage(request.offerPercentage());
-        batchExecutor.submit(customerRepository.findAll(), customer -> messageSender.send(
+        batchExecutor.submit(customers, customer -> messageSender.send(
                 customer,
                 WhatsAppMessageType.MANUAL_CAMAPIGN,
                 whatsAppService.getFestivalTemplateName(),

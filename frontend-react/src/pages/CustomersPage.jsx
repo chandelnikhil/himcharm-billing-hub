@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   InputAdornment,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -18,10 +19,11 @@ import PageHeader from '../components/common/PageHeader'
 import ModuleCard from '../components/common/ModuleCard'
 import StatusChip from '../components/common/StatusChip'
 import TableState from '../components/common/TableState'
-import { customersApi } from '../api/services'
+import { customersApi, storesApi } from '../api/services'
 import { getApiError } from '../api/client'
 
-const emptyFilters = () => ({ fromDate: '', toDate: '', phone: '' })
+const ALL_STORES = 'all'
+const emptyFilters = () => ({ fromDate: '', toDate: '', phone: '', storeId: ALL_STORES })
 const formatDate = (value) => value
   ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(`${value}T00:00:00`))
   : '—'
@@ -37,6 +39,7 @@ export default function CustomersPage() {
   const [totalCustomers, setTotalCustomers] = useState(0)
   const [filters, setFilters] = useState(emptyFilters)
   const [appliedFilters, setAppliedFilters] = useState(emptyFilters)
+  const [stores, setStores] = useState([])
 
   const loadCustomers = useCallback(async (targetPage = page) => {
     setLoading(true)
@@ -46,6 +49,7 @@ export default function CustomersPage() {
       if (appliedFilters.fromDate) params.fromDate = appliedFilters.fromDate
       if (appliedFilters.toDate) params.toDate = appliedFilters.toDate
       if (appliedFilters.phone.trim()) params.phone = appliedFilters.phone.trim()
+      if (appliedFilters.storeId !== ALL_STORES) params.storeId = appliedFilters.storeId
       const response = await customersApi.list(params)
       setCustomers(response?.content || [])
       setTotalCustomers(response?.totalElements || 0)
@@ -60,6 +64,10 @@ export default function CustomersPage() {
     const task = window.setTimeout(loadCustomers, 0)
     return () => window.clearTimeout(task)
   }, [loadCustomers])
+
+  useEffect(() => {
+    storesApi.list().then((result) => setStores(result || [])).catch(() => setStores([]))
+  }, [])
 
   const applyFilters = () => {
     if (filters.fromDate && filters.toDate && filters.fromDate > filters.toDate) {
@@ -77,16 +85,20 @@ export default function CustomersPage() {
     setAppliedFilters(emptyFilters())
   }
 
+  const hasFilters = filters.phone || filters.fromDate || filters.toDate || filters.storeId !== ALL_STORES
+    || appliedFilters.phone || appliedFilters.fromDate || appliedFilters.toDate || appliedFilters.storeId !== ALL_STORES
+
   return (
     <>
       <PageHeader title="Customers" description="Review customer profiles and contact information." />
       <ModuleCard>
         <Box sx={{ p: 2.3, display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 1.5 }}>
           <Box sx={{ width: { xs: '100%', sm: 240 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Phone number</Typography><TextField fullWidth size="small" placeholder="Search phone…" value={filters.phone} onChange={(event) => setFilters((current) => ({ ...current, phone: event.target.value }))} inputProps={{ maxLength: 20 }} InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon color="action" fontSize="small" /></InputAdornment> }} /></Box>
+          <Box sx={{ width: { xs: '100%', sm: 200 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Store</Typography><TextField select fullWidth size="small" value={filters.storeId} onChange={(event) => setFilters((current) => ({ ...current, storeId: event.target.value }))}><MenuItem value={ALL_STORES}>All stores</MenuItem>{stores.map((store) => <MenuItem key={store.id} value={String(store.id)}>{store.name}</MenuItem>)}</TextField></Box>
           <Box sx={{ width: { xs: '100%', sm: 180 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>Start date</Typography><TextField fullWidth size="small" type="date" value={filters.fromDate} onChange={(event) => setFilters((current) => ({ ...current, fromDate: event.target.value }))} inputProps={{ 'aria-label': 'Start date' }} /></Box>
           <Box sx={{ width: { xs: '100%', sm: 180 } }}><Typography color="text.secondary" sx={{ mb: .7, fontSize: 12.5, fontWeight: 650 }}>End date</Typography><TextField fullWidth size="small" type="date" value={filters.toDate} onChange={(event) => setFilters((current) => ({ ...current, toDate: event.target.value }))} inputProps={{ 'aria-label': 'End date' }} /></Box>
           <Button variant="contained" onClick={applyFilters} sx={{ height: 40 }}>Apply</Button>
-          <Button color="inherit" onClick={clearFilters} disabled={!filters.phone && !filters.fromDate && !filters.toDate && !appliedFilters.phone && !appliedFilters.fromDate && !appliedFilters.toDate} sx={{ height: 40 }}>Clear</Button>
+          <Button color="inherit" onClick={clearFilters} disabled={!hasFilters} sx={{ height: 40 }}>Clear</Button>
           <Typography color="text.secondary" sx={{ ml: { sm: 'auto' }, fontSize: 13 }}>{totalCustomers} customer{totalCustomers === 1 ? '' : 's'}</Typography>
         </Box>
 

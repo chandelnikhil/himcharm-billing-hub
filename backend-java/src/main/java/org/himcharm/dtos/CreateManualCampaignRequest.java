@@ -20,6 +20,8 @@ public record CreateManualCampaignRequest(
 
         @NotNull(message = "Valid up to date is required")
         @FutureOrPresent(message = "Valid up to date cannot be in the past")
-        LocalDate validUpTo
+        LocalDate validUpTo,
+
+        Long storeId
 ) {
 }

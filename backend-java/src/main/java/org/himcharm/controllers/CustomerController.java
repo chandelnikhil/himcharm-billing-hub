@@ -47,9 +47,10 @@ public class CustomerController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
-            @RequestParam(required = false) String phone
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) Long storeId
     ) {
-        Page<Customer> customerPage = customerService.getCustomers(page, fromDate, toDate, phone);
+        Page<Customer> customerPage = customerService.getCustomers(page, fromDate, toDate, phone, storeId);
         PageResponseDTO<CustomerResponseDTO> customers = PageResponseDTO.<CustomerResponseDTO>builder()
                 .content(customerPage.getContent().stream().map(this::toResponse).toList())
                 .page(customerPage.getNumber())
